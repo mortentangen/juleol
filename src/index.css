@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@theme {
+    --color-glass: rgba(255, 255, 255, 0.05);
+}
+
+@layer utilities {
+    .glass {
+        background: rgba(255, 255, 255, 0.10);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+}
+
+button {
+    cursor: pointer;
+}
+
+body {
+    @apply bg-slate-950 text-white min-h-screen;
+    background: radial-gradient(circle at top center, #1e293b, #020617);
+}
