@@ -3,6 +3,7 @@ import { X, Plus, Loader2, Link as LinkIcon } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { importFromVinmonopolet } from '../lib/vinmonopolet';
+import { useAuth } from '../context/AuthContext';
 
 interface AddBeerModalProps {
     isOpen: boolean;
@@ -12,6 +13,7 @@ interface AddBeerModalProps {
 }
 
 export default function AddBeerModal({ isOpen, onClose, sessionId, onBeerAdded }: AddBeerModalProps) {
+    const { user } = useAuth();
     const [activeTab, setActiveTab] = useState<'manual' | 'url'>('manual');
     const [loading, setLoading] = useState(false);
 
@@ -83,6 +85,7 @@ export default function AddBeerModal({ isOpen, onClose, sessionId, onBeerAdded }
                 .insert({
                     session_id: sessionId,
                     beer_id: beerData.id,
+                    added_by: user?.id,
                 });
 
             if (linkError) throw linkError;

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, Users, Plus, Trophy } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
@@ -7,13 +7,13 @@ import type { Session, Beer } from '../types';
 import BeerCard from '../components/BeerCard';
 import AddBeerModal from '../components/AddBeerModal';
 import RateBeerModal from '../components/RateBeerModal';
-import LeaderboardModal from '../components/LeaderboardModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { motion } from 'framer-motion';
 
 export default function SessionDetails() {
     const { id } = useParams<{ id: string }>();
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [session, setSession] = useState<Session | null>(null);
     const [beers, setBeers] = useState<Beer[]>([]);
     const [loading, setLoading] = useState(true);
@@ -23,9 +23,6 @@ export default function SessionDetails() {
     // Rating Modal State
     const [isRateModalOpen, setIsRateModalOpen] = useState(false);
     const [selectedBeer, setSelectedBeer] = useState<Beer | null>(null);
-
-    // Leaderboard Modal State
-    const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
 
     // Delete Confirmation State
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -50,7 +47,12 @@ export default function SessionDetails() {
                 .from('session_beers')
                 .select(`
           beer_id,
-          beers (*)
+          added_by,
+          beers (*),
+          profiles:added_by (
+            full_name,
+            avatar_url
+          )
         `)
                 .eq('session_id', id)
                 .order('sorting_order', { ascending: true });
@@ -59,7 +61,10 @@ export default function SessionDetails() {
 
             // Transform data to match Beer interface
             // @ts-ignore - Supabase types are a bit tricky with joins
-            const formattedBeers = beersData.map((item) => item.beers) as Beer[];
+            const formattedBeers = beersData.map((item) => ({
+                ...item.beers,
+                addedBy: item.profiles
+            })) as Beer[];
             setBeers(formattedBeers);
 
         } catch (error) {
@@ -152,23 +157,21 @@ export default function SessionDetails() {
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                onClick={() => setIsLeaderboardOpen(true)}
+                                onClick={() => navigate(`/session/${id}/leaderboard`)}
                                 className="flex items-center px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-medium transition-colors border border-white/10 shadow-lg"
                             >
                                 <Trophy className="w-5 h-5 mr-2 text-yellow-500" />
                                 Leaderboard
                             </motion.button>
-                            {isHost && (
-                                <motion.button
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => setIsAddBeerModalOpen(true)}
-                                    className="flex items-center px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white rounded-lg font-medium shadow-lg shadow-amber-500/20 transition-all"
-                                >
-                                    <Plus className="w-5 h-5 mr-2" />
-                                    Add Beer
-                                </motion.button>
-                            )}
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => setIsAddBeerModalOpen(true)}
+                                className="flex items-center px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white rounded-lg font-medium shadow-lg shadow-amber-500/20 transition-all"
+                            >
+                                <Plus className="w-5 h-5 mr-2" />
+                                Add Beer
+                            </motion.button>
                         </div>
                     </div>
                 </div>
@@ -228,13 +231,6 @@ export default function SessionDetails() {
                     }}
                 />
             )}
-
-            <LeaderboardModal
-                isOpen={isLeaderboardOpen}
-                onClose={() => setIsLeaderboardOpen(false)}
-                sessionId={session.id}
-                beers={beers}
-            />
 
             <ConfirmDialog
                 isOpen={isDeleteDialogOpen}

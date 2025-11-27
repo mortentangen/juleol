@@ -15,18 +15,21 @@ export interface Beer {
     style: string;
     abv: number;
     description: string;
-    image_url: string;
+    image_url?: string;
+    addedBy?: {
+        full_name: string | null;
+        avatar_url?: string | null;
+    };
 }
 
 export interface Rating {
     id: string;
+    created_at: string;
     user_id: string;
     beer_id: string;
     session_id: string;
-    appearance: number;
-    aroma: number;
     taste: number;
     mouthfeel: number;
     overall: number;
-    comment: string;
+    comment?: string;
 }
