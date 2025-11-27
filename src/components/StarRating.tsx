@@ -5,14 +5,15 @@ interface StarRatingProps {
     onChange: (value: number) => void;
     label?: string;
     readOnly?: boolean;
+    maxStars?: number;
 }
 
-export default function StarRating({ value, onChange, label, readOnly = false }: StarRatingProps) {
+export default function StarRating({ value, onChange, label, readOnly = false, maxStars = 5 }: StarRatingProps) {
     return (
         <div className="flex flex-col space-y-1">
             {label && <span className="text-sm font-medium text-gray-300">{label}</span>}
             <div className="flex space-x-1">
-                {[1, 2, 3, 4, 5].map((star) => (
+                {Array.from({ length: maxStars }, (_, i) => i + 1).map((star) => (
                     <button
                         key={star}
                         type="button"

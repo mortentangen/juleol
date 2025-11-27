@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Save } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
@@ -24,12 +24,46 @@ export default function RateBeerModal({
     const { user } = useAuth();
     const [loading, setLoading] = useState(false);
 
-    const [appearance, setAppearance] = useState(0);
-    const [aroma, setAroma] = useState(0);
     const [taste, setTaste] = useState(0);
     const [mouthfeel, setMouthfeel] = useState(0);
     const [overall, setOverall] = useState(0);
     const [comment, setComment] = useState('');
+
+    // Fetch existing rating when modal opens
+    useEffect(() => {
+        const fetchExistingRating = async () => {
+            if (!isOpen || !user || !beer.id) return;
+
+            try {
+                const { data } = await supabase
+                    .from('ratings')
+                    .select('*')
+                    .eq('beer_id', beer.id)
+                    .eq('user_id', user.id)
+                    .eq('session_id', sessionId)
+                    .single();
+
+                if (data) {
+                    setTaste(data.taste || 0);
+                    setMouthfeel(data.mouthfeel || 0);
+                    setOverall(data.overall || 0);
+                    setComment(data.comment || '');
+                }
+            } catch (error) {
+                // No existing rating, keep defaults at 0
+            }
+        };
+
+        if (isOpen) {
+            fetchExistingRating();
+        } else {
+            // Reset when modal closes
+            setTaste(0);
+            setMouthfeel(0);
+            setOverall(0);
+            setComment('');
+        }
+    }, [isOpen, beer.id, user, sessionId]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -43,8 +77,6 @@ export default function RateBeerModal({
                     user_id: user.id,
                     beer_id: beer.id,
                     session_id: sessionId,
-                    appearance,
-                    aroma,
                     taste,
                     mouthfeel,
                     overall,
@@ -95,14 +127,12 @@ export default function RateBeerModal({
 
                         <form onSubmit={handleSubmit} className="p-6 space-y-6 overflow-y-auto">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <StarRating label="Appearance" value={appearance} onChange={setAppearance} />
-                                <StarRating label="Aroma" value={aroma} onChange={setAroma} />
-                                <StarRating label="Taste" value={taste} onChange={setTaste} />
-                                <StarRating label="Mouthfeel" value={mouthfeel} onChange={setMouthfeel} />
+                                <StarRating label="Taste (out of 5)" value={taste} onChange={setTaste} maxStars={5} />
+                                <StarRating label="Mouthfeel (out of 5)" value={mouthfeel} onChange={setMouthfeel} maxStars={5} />
                             </div>
 
                             <div className="border-t border-white/20 pt-6">
-                                <StarRating label="Overall Impression" value={overall} onChange={setOverall} />
+                                <StarRating label="Overall Impression (out of 5)" value={overall} onChange={setOverall} maxStars={5} />
                             </div>
 
                             <div>
