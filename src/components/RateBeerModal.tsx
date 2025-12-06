@@ -91,7 +91,7 @@ export default function RateBeerModal({
             onClose();
         } catch (error) {
             console.error('Error submitting rating:', error);
-            alert('Failed to submit rating');
+            alert('Kunne ikke lagre vurdering');
         } finally {
             setLoading(false);
         }
@@ -117,7 +117,7 @@ export default function RateBeerModal({
                     >
                         <div className="flex items-center justify-between p-6 border-b border-white/20">
                             <div>
-                                <h2 className="text-xl font-bold text-white">Rate Beer</h2>
+                                <h2 className="text-xl font-bold text-white">Vurder øl</h2>
                                 <p className="text-amber-500 text-sm">{beer.name}</p>
                             </div>
                             <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
@@ -127,21 +127,21 @@ export default function RateBeerModal({
 
                         <form onSubmit={handleSubmit} className="p-6 space-y-6 overflow-y-auto">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <StarRating label="Taste (out of 5)" value={taste} onChange={setTaste} maxStars={5} />
-                                <StarRating label="Mouthfeel (out of 5)" value={mouthfeel} onChange={setMouthfeel} maxStars={5} />
+                                <StarRating label="Smak (av 5)" value={taste} onChange={setTaste} maxStars={5} />
+                                <StarRating label="Munnfølelse (av 5)" value={mouthfeel} onChange={setMouthfeel} maxStars={5} />
                             </div>
 
                             <div className="border-t border-white/20 pt-6">
-                                <StarRating label="Overall Impression (out of 5)" value={overall} onChange={setOverall} maxStars={5} />
+                                <StarRating label="Helhetsinntrykk (av 5)" value={overall} onChange={setOverall} maxStars={5} />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-2">Comments</label>
+                                <label className="block text-sm font-medium text-slate-300 mb-2">Kommentarer</label>
                                 <textarea
                                     value={comment}
                                     onChange={(e) => setComment(e.target.value)}
                                     className="w-full bg-slate-800/50 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-amber-500 h-24 placeholder-slate-500"
-                                    placeholder="What did you think?"
+                                    placeholder="Hva syntes du?"
                                 />
                             </div>
 
@@ -151,7 +151,7 @@ export default function RateBeerModal({
                                     onClick={onClose}
                                     className="px-4 py-2 text-slate-300 hover:text-white transition-colors font-medium"
                                 >
-                                    Cancel
+                                    Avbryt
                                 </button>
                                 <button
                                     type="submit"
@@ -159,11 +159,11 @@ export default function RateBeerModal({
                                     className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white rounded-lg font-medium shadow-lg shadow-amber-500/20 transition-all disabled:opacity-50 flex items-center"
                                 >
                                     {loading ? (
-                                        'Saving...'
+                                        'Lagrer...'
                                     ) : (
                                         <>
                                             <Save className="w-5 h-5 mr-2" />
-                                            Save Rating
+                                            Lagre vurdering
                                         </>
                                     )}
                                 </button>

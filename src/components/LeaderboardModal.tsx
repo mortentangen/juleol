@@ -106,7 +106,7 @@ export default function LeaderboardModal({ isOpen, onClose, sessionId, beers }: 
                                 <div className="bg-amber-500/20 p-2 rounded-lg">
                                     <Trophy className="w-6 h-6 text-amber-500" />
                                 </div>
-                                <h2 className="text-xl font-bold text-white">Leaderboard</h2>
+                                <h2 className="text-xl font-bold text-white">Resultatliste</h2>
                             </div>
                             <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
                                 <X className="w-6 h-6" />
@@ -120,7 +120,7 @@ export default function LeaderboardModal({ isOpen, onClose, sessionId, beers }: 
                                 </div>
                             ) : scores.length === 0 ? (
                                 <div className="text-center py-12 text-slate-400">
-                                    No ratings yet. Start tasting!
+                                    Ingen vurderinger ennå. Begynn smakingen!
                                 </div>
                             ) : (
                                 <div className="space-y-4">
@@ -154,7 +154,7 @@ export default function LeaderboardModal({ isOpen, onClose, sessionId, beers }: 
                                                         <span className="text-sm text-slate-500 ml-1">/ 5</span>
                                                     </div>
                                                     <div className="text-xs text-slate-500">
-                                                        {score.count} {score.count === 1 ? 'rating' : 'ratings'}
+                                                        {score.count} {score.count === 1 ? 'vurdering' : 'vurderinger'}
                                                     </div>
                                                 </div>
                                             </motion.div>

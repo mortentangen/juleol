@@ -105,7 +105,7 @@ export default function SessionDetails() {
             fetchSessionData();
         } catch (error) {
             console.error('Error deleting beer:', error);
-            alert('Failed to delete beer. Please try again.');
+            alert('Kunne ikke slette øl. Vennligst prøv igjen.');
         } finally {
             setBeerToDelete(null);
         }
@@ -122,10 +122,10 @@ export default function SessionDetails() {
     if (!session) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center text-white">
-                <h2 className="text-2xl font-bold mb-4">Session not found</h2>
+                <h2 className="text-2xl font-bold mb-4">Ølsmaking ikke funnet</h2>
                 <Link to="/" className="text-amber-500 hover:text-amber-400 flex items-center">
                     <ArrowLeft className="w-5 h-5 mr-2" />
-                    Back to Dashboard
+                    Tilbake til oversikten
                 </Link>
             </div>
         );
@@ -137,7 +137,7 @@ export default function SessionDetails() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <Link to="/" className="text-slate-300 hover:text-white flex items-center mb-4 transition-colors w-fit">
                         <ArrowLeft className="w-5 h-5 mr-2" />
-                        Back to Dashboard
+                        Tilbake til oversikten
                     </Link>
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
@@ -149,7 +149,7 @@ export default function SessionDetails() {
                                 </div>
                                 <div className="flex items-center">
                                     <Users className="w-5 h-5 mr-2 text-amber-500/70" />
-                                    Code: <span className="font-mono ml-2 text-amber-500 bg-amber-500/10 px-2 py-1 rounded">{session.join_code}</span>
+                                    Kode: <span className="font-mono ml-2 text-amber-500 bg-amber-500/10 px-2 py-1 rounded">{session.join_code}</span>
                                 </div>
                             </div>
                         </div>
@@ -161,7 +161,7 @@ export default function SessionDetails() {
                                 className="flex items-center px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-medium transition-colors border border-white/10 shadow-lg"
                             >
                                 <Trophy className="w-5 h-5 mr-2 text-yellow-500" />
-                                Leaderboard
+                                Resultatliste
                             </motion.button>
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
@@ -170,7 +170,7 @@ export default function SessionDetails() {
                                 className="flex items-center px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white rounded-lg font-medium shadow-lg shadow-amber-500/20 transition-all"
                             >
                                 <Plus className="w-5 h-5 mr-2" />
-                                Add Beer
+                                Legg til øl
                             </motion.button>
                         </div>
                     </div>
@@ -187,14 +187,14 @@ export default function SessionDetails() {
                         <div className="bg-slate-800/50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
                             <Plus className="w-10 h-10 text-slate-500" />
                         </div>
-                        <h3 className="text-xl font-bold text-white mb-2">No beers added yet</h3>
-                        <p className="text-slate-300 mb-8">Add some beers to start the tasting!</p>
+                        <h3 className="text-xl font-bold text-white mb-2">Ingen øl lagt til ennå</h3>
+                        <p className="text-slate-300 mb-8">Legg til noen øl for å starte smakingen!</p>
                         <button
                             onClick={() => setIsAddBeerModalOpen(true)}
                             className="inline-flex items-center px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl transition-colors font-medium border border-white/10"
                         >
                             <Plus className="w-5 h-5 mr-2" />
-                            Add Beer
+                            Legg til øl
                         </button>
                     </motion.div>
                 ) : (
@@ -236,10 +236,10 @@ export default function SessionDetails() {
                 isOpen={isDeleteDialogOpen}
                 onClose={() => setIsDeleteDialogOpen(false)}
                 onConfirm={confirmDeleteBeer}
-                title="Delete Beer"
-                message="Are you sure you want to remove this beer from the session? This action cannot be undone."
-                confirmText="Delete"
-                cancelText="Cancel"
+                title="Slett øl"
+                message="Er du sikker på at du vil fjerne denne fra ølsmakingen? Denne handlingen kan ikke angres."
+                confirmText="Slett"
+                cancelText="Avbryt"
                 variant="danger"
             />
         </div>

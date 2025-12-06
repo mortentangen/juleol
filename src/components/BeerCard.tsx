@@ -99,7 +99,7 @@ export default function BeerCard({ beer, onRate, onDelete, index = 0 }: BeerCard
                                     onDelete();
                                 }}
                                 className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors flex-shrink-0"
-                                title="Delete beer"
+                                title="Slett øl"
                             >
                                 <Trash2 className="w-4 h-4" />
                             </motion.button>
@@ -112,8 +112,8 @@ export default function BeerCard({ beer, onRate, onDelete, index = 0 }: BeerCard
                         </span>
                         {beer.addedBy && (
                             <span className="text-[10px] text-slate-500 flex items-center gap-1">
-                                Added by <span className="text-slate-400 font-medium">
-                                    {beer.addedBy.full_name ? beer.addedBy.full_name.split(' ')[0] : 'Unknown'}
+                                Lagt til av <span className="text-slate-400 font-medium">
+                                    {beer.addedBy.full_name ? beer.addedBy.full_name.split(' ')[0] : 'Ukjent'}
                                 </span>
                             </span>
                         )}
@@ -124,12 +124,12 @@ export default function BeerCard({ beer, onRate, onDelete, index = 0 }: BeerCard
                         {loading ? (
                             <div className="flex items-center gap-1.5 text-slate-400 text-xs">
                                 <div className="w-3 h-3 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>
-                                Loading...
+                                Laster...
                             </div>
                         ) : (
                             <>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-slate-400 text-xs">Taste:</span>
+                                    <span className="text-slate-400 text-xs">Smak:</span>
                                     <div className="flex items-center gap-0.5">
                                         {Array.from({ length: 5 }, (_, i) => (
                                             <Star
@@ -146,7 +146,7 @@ export default function BeerCard({ beer, onRate, onDelete, index = 0 }: BeerCard
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-slate-400 text-xs">Mouthfeel:</span>
+                                    <span className="text-slate-400 text-xs">Munnfølelse:</span>
                                     <div className="flex items-center gap-0.5">
                                         {Array.from({ length: 5 }, (_, i) => (
                                             <Star
@@ -163,7 +163,7 @@ export default function BeerCard({ beer, onRate, onDelete, index = 0 }: BeerCard
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-slate-400 text-xs">Overall:</span>
+                                    <span className="text-slate-400 text-xs">Helhet:</span>
                                     <div className="flex items-center gap-0.5">
                                         {Array.from({ length: 5 }, (_, i) => (
                                             <Star

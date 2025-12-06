@@ -18,8 +18,8 @@ export default function ConfirmDialog({
     onConfirm,
     title,
     message,
-    confirmText = 'Confirm',
-    cancelText = 'Cancel',
+    confirmText = 'Bekreft',
+    cancelText = 'Avbryt',
     variant = 'warning'
 }: ConfirmDialogProps) {
     const handleConfirm = () => {

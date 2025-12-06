@@ -34,14 +34,14 @@ export default function JoinSessionModal({ isOpen, onClose, onSessionJoined }: J
                 .single();
 
             if (sessionError || !session) {
-                setError('Invalid join code. Please check and try again.');
+                setError('Ugyldig kode. Vennligst sjekk og prøv igjen.');
                 setLoading(false);
                 return;
             }
 
             // Check if user is already the host
             if (session.host_id === user.id) {
-                setError('You are already the host of this session.');
+                setError('Du er allerede vert for denne smakingen.');
                 setLoading(false);
                 return;
             }
@@ -55,7 +55,7 @@ export default function JoinSessionModal({ isOpen, onClose, onSessionJoined }: J
                 .single();
 
             if (existing) {
-                setError('You have already joined this session.');
+                setError('Du har allerede blitt med i denne smakingen.');
                 setLoading(false);
                 return;
             }
@@ -77,7 +77,7 @@ export default function JoinSessionModal({ isOpen, onClose, onSessionJoined }: J
             setError('');
         } catch (error) {
             console.error('Error joining session:', error);
-            setError('Failed to join session. Please try again.');
+            setError('Kunne ikke bli med i ølsmakingen. Vennligst prøv igjen.');
         } finally {
             setLoading(false);
         }
@@ -112,7 +112,7 @@ export default function JoinSessionModal({ isOpen, onClose, onSessionJoined }: J
                                 <div className="p-2 bg-amber-500/20 rounded-lg">
                                     <Users className="w-6 h-6 text-amber-500" />
                                 </div>
-                                <h2 className="text-xl font-bold text-white">Join Session</h2>
+                                <h2 className="text-xl font-bold text-white">Join ølsmaking</h2>
                             </div>
                             <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
                                 <X className="w-6 h-6" />
@@ -122,7 +122,7 @@ export default function JoinSessionModal({ isOpen, onClose, onSessionJoined }: J
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
                             <div>
                                 <label htmlFor="joinCode" className="block text-sm font-medium text-slate-300 mb-2">
-                                    Enter Join Code
+                                    Skriv inn kode
                                 </label>
                                 <input
                                     id="joinCode"
@@ -135,7 +135,7 @@ export default function JoinSessionModal({ isOpen, onClose, onSessionJoined }: J
                                     maxLength={6}
                                 />
                                 <p className="text-slate-400 text-sm mt-2">
-                                    Ask the session host for the 6-character code
+                                    Be verten for ølsmakingen om koden på 6 tegn
                                 </p>
                             </div>
 
@@ -151,14 +151,14 @@ export default function JoinSessionModal({ isOpen, onClose, onSessionJoined }: J
                                     onClick={onClose}
                                     className="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors"
                                 >
-                                    Cancel
+                                    Avbryt
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={loading || joinCode.length !== 6}
                                     className="flex-1 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white rounded-lg font-medium shadow-lg shadow-amber-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    {loading ? 'Joining...' : 'Join Session'}
+                                    {loading ? 'Blir med...' : 'Bli med i ølsmaking'}
                                 </button>
                             </div>
                         </form>

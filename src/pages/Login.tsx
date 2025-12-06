@@ -5,36 +5,13 @@ import { Beer } from 'lucide-react';
 export default function Login() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [email, setEmail] = useState('');
-    const [message, setMessage] = useState<string | null>(null);
 
-    const handleEmailLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            setLoading(true);
-            setError(null);
-            setMessage(null);
-            const { error } = await supabase.auth.signInWithOtp({
-                email,
-                options: {
-                    emailRedirectTo: `${window.location.origin}/`,
-                },
-            });
-            if (error) throw error;
-            setMessage('Check your email for the login link!');
-        } catch (err: any) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleLogin = async (provider: 'google' | 'facebook') => {
+    const handleLogin = async () => {
         try {
             setLoading(true);
             setError(null);
             const { error } = await supabase.auth.signInWithOAuth({
-                provider,
+                provider: 'google',
                 options: {
                     redirectTo: `${window.location.origin}/`,
                 },
@@ -54,8 +31,8 @@ export default function Login() {
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-500/20 mb-4">
                         <Beer className="w-8 h-8 text-amber-500" />
                     </div>
-                    <h2 className="text-3xl font-bold text-white mb-2">Welcome Back</h2>
-                    <p className="text-gray-300">Sign in to start rating beers</p>
+                    <h2 className="text-3xl font-bold text-white mb-2">Juleølsmaking</h2>
+                    <p className="text-gray-300">Logg inn for å rate øl</p>
                 </div>
 
                 {error && (
@@ -64,46 +41,9 @@ export default function Login() {
                     </div>
                 )}
 
-                {message && (
-                    <div className="bg-green-500/10 border border-green-500/50 text-green-500 p-3 rounded-lg mb-6 text-sm text-center">
-                        {message}
-                    </div>
-                )}
-
-                <form onSubmit={handleEmailLogin} className="space-y-4 mb-6">
-                    <div>
-                        <label htmlFor="email" className="sr-only">Email address</label>
-                        <input
-                            id="email"
-                            type="email"
-                            required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="Enter your email"
-                            className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {loading ? 'Sending link...' : 'Send Magic Link'}
-                    </button>
-                </form>
-
-                <div className="relative mb-6">
-                    <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-gray-700"></div>
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                        <span className="px-2 bg-gray-800 text-gray-300">Or continue with</span>
-                    </div>
-                </div>
-
                 <div className="space-y-4">
                     <button
-                        onClick={() => handleLogin('google')}
+                        onClick={handleLogin}
                         disabled={loading}
                         className="w-full flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-lg text-gray-900 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
@@ -125,18 +65,7 @@ export default function Login() {
                                 fill="#EA4335"
                             />
                         </svg>
-                        Sign in with Google
-                    </button>
-
-                    <button
-                        onClick={() => handleLogin('facebook')}
-                        disabled={loading}
-                        className="w-full flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-[#1877F2] hover:bg-[#1864D9] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1877F2] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        <svg className="h-5 w-5 mr-3" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                        </svg>
-                        Sign in with Facebook
+                        Logg inn med Google
                     </button>
                 </div>
             </div>

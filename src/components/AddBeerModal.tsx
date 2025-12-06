@@ -48,11 +48,11 @@ export default function AddBeerModal({ isOpen, onClose, sessionId, onBeerAdded }
                 setActiveTab('manual');
                 setImportUrl(''); // Clear the URL input
             } else {
-                alert('Could not import beer from URL. Please check the URL and try again.');
+                alert('Kunne ikke importere øl fra URL. Vennligst sjekk URLen og prøv igjen.');
             }
         } catch (error) {
             console.error('Import error:', error);
-            alert('Failed to import beer. Please try again or use manual entry.');
+            alert('Import feilet. Prøv igjen eller bruk manuell registrering.');
         } finally {
             setImporting(false);
         }
@@ -104,7 +104,7 @@ export default function AddBeerModal({ isOpen, onClose, sessionId, onBeerAdded }
             onClose();
         } catch (error) {
             console.error('Error adding beer:', error);
-            alert('Failed to add beer. Please try again.');
+            alert('Kunne ikke legge til øl. Vennligst prøv igjen.');
         } finally {
             setLoading(false);
         }
@@ -129,7 +129,7 @@ export default function AddBeerModal({ isOpen, onClose, sessionId, onBeerAdded }
                         className="glass w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] relative z-10"
                     >
                         <div className="flex items-center justify-between p-6 border-b border-white/10">
-                            <h2 className="text-xl font-bold text-white">Add Beer to Session</h2>
+                            <h2 className="text-xl font-bold text-white">Legg til øl</h2>
                             <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
                                 <X className="w-6 h-6" />
                             </button>
@@ -144,7 +144,7 @@ export default function AddBeerModal({ isOpen, onClose, sessionId, onBeerAdded }
                                     : 'text-slate-400 hover:text-white hover:bg-white/5'
                                     }`}
                             >
-                                Manual Entry
+                                Manuell registrering
                             </button>
                             <button
                                 onClick={() => setActiveTab('url')}
@@ -153,7 +153,7 @@ export default function AddBeerModal({ isOpen, onClose, sessionId, onBeerAdded }
                                     : 'text-slate-400 hover:text-white hover:bg-white/5'
                                     }`}
                             >
-                                Import URL
+                                Importer URL
                             </button>
                         </div>
 
@@ -162,7 +162,7 @@ export default function AddBeerModal({ isOpen, onClose, sessionId, onBeerAdded }
                                 <form onSubmit={handleManualSubmit} className="space-y-4">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-slate-300 mb-1">Beer Name</label>
+                                            <label className="block text-sm font-medium text-slate-300 mb-1">Ølnavn</label>
                                             <input
                                                 type="text"
                                                 required
@@ -173,7 +173,7 @@ export default function AddBeerModal({ isOpen, onClose, sessionId, onBeerAdded }
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-slate-300 mb-1">Brewery</label>
+                                            <label className="block text-sm font-medium text-slate-300 mb-1">Bryggeri</label>
                                             <input
                                                 type="text"
                                                 required
@@ -187,7 +187,7 @@ export default function AddBeerModal({ isOpen, onClose, sessionId, onBeerAdded }
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-slate-300 mb-1">Style</label>
+                                            <label className="block text-sm font-medium text-slate-300 mb-1">Stil</label>
                                             <input
                                                 type="text"
                                                 value={style}
@@ -210,17 +210,17 @@ export default function AddBeerModal({ isOpen, onClose, sessionId, onBeerAdded }
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-300 mb-1">Description</label>
+                                        <label className="block text-sm font-medium text-slate-300 mb-1">Beskrivelse</label>
                                         <textarea
                                             value={description}
                                             onChange={(e) => setDescription(e.target.value)}
                                             className="w-full bg-slate-800/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder-slate-500 h-24"
-                                            placeholder="Tasting notes..."
+                                            placeholder="Smaksnotater..."
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-300 mb-1">Image URL (Optional)</label>
+                                        <label className="block text-sm font-medium text-slate-300 mb-1">Bilde URL (Valgfritt)</label>
                                         <input
                                             type="url"
                                             value={imageUrl}
@@ -236,7 +236,7 @@ export default function AddBeerModal({ isOpen, onClose, sessionId, onBeerAdded }
                                             onClick={onClose}
                                             className="px-4 py-2 text-slate-300 hover:text-white transition-colors font-medium"
                                         >
-                                            Cancel
+                                            Avbryt
                                         </button>
                                         <button
                                             type="submit"
@@ -244,11 +244,11 @@ export default function AddBeerModal({ isOpen, onClose, sessionId, onBeerAdded }
                                             className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white rounded-lg font-medium shadow-lg shadow-amber-500/20 transition-all disabled:opacity-50 flex items-center"
                                         >
                                             {loading ? (
-                                                'Adding...'
+                                                'Legger til...'
                                             ) : (
                                                 <>
                                                     <Plus className="w-5 h-5 mr-2" />
-                                                    Add Beer
+                                                    Legg til øl
                                                 </>
                                             )}
                                         </button>
@@ -258,8 +258,8 @@ export default function AddBeerModal({ isOpen, onClose, sessionId, onBeerAdded }
                                 <div className="space-y-4">
                                     <div className="text-center py-4">
                                         <LinkIcon className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-                                        <h3 className="text-lg font-medium text-white mb-2">Import from Vinmonopolet</h3>
-                                        <p className="text-slate-300 text-sm mb-4">Paste a Vinmonopolet product URL to auto-fill beer details</p>
+                                        <h3 className="text-lg font-medium text-white mb-2">Importer fra Vinmonopolet</h3>
+                                        <p className="text-slate-300 text-sm mb-4">Lim inn en Vinmonopolet produkt-URL for å fylle ut detaljer automatisk</p>
                                     </div>
 
                                     <div className="flex gap-2">
@@ -279,24 +279,24 @@ export default function AddBeerModal({ isOpen, onClose, sessionId, onBeerAdded }
                                             {importing ? (
                                                 <>
                                                     <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                                                    Importing...
+                                                    Importerer...
                                                 </>
                                             ) : (
                                                 <>
                                                     <Plus className="w-5 h-5 mr-2" />
-                                                    Import
+                                                    Importer
                                                 </>
                                             )}
                                         </button>
                                     </div>
 
                                     <div className="bg-slate-800/30 border border-white/10 rounded-lg p-4">
-                                        <h4 className="text-sm font-medium text-white mb-2">How to use:</h4>
+                                        <h4 className="text-sm font-medium text-white mb-2">Hvordan bruke:</h4>
                                         <ol className="text-sm text-slate-300 space-y-1 list-decimal list-inside">
-                                            <li>Go to <a href="https://www.vinmonopolet.no" target="_blank" rel="noopener noreferrer" className="text-amber-500 hover:text-amber-400">vinmonopolet.no</a></li>
-                                            <li>Find the beer you want to add</li>
-                                            <li>Copy the URL from your browser</li>
-                                            <li>Paste it above and click Import</li>
+                                            <li>Gå til <a href="https://www.vinmonopolet.no" target="_blank" rel="noopener noreferrer" className="text-amber-500 hover:text-amber-400">vinmonopolet.no</a></li>
+                                            <li>Finn ølen du vil legge til</li>
+                                            <li>Kopier URLen fra nettleseren</li>
+                                            <li>Lim den inn over og trykk Importer</li>
                                         </ol>
                                     </div>
                                 </div>
