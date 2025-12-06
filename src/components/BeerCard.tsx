@@ -10,6 +10,7 @@ interface BeerCardProps {
     onRate: () => void;
     onDelete?: () => void;
     index?: number;
+    refreshTrigger?: number;
 }
 
 interface UserRating {
@@ -18,7 +19,7 @@ interface UserRating {
     overall: number;
 }
 
-export default function BeerCard({ beer, onRate, onDelete, index = 0 }: BeerCardProps) {
+export default function BeerCard({ beer, onRate, onDelete, index = 0, refreshTrigger = 0 }: BeerCardProps) {
     const { user } = useAuth();
     const [userRating, setUserRating] = useState<UserRating | null>(null);
     const [loading, setLoading] = useState(true);
@@ -36,7 +37,7 @@ export default function BeerCard({ beer, onRate, onDelete, index = 0 }: BeerCard
                     .select('taste, mouthfeel, overall')
                     .eq('beer_id', beer.id)
                     .eq('user_id', user.id)
-                    .single();
+                    .maybeSingle();
 
                 if (data) {
                     setUserRating(data);
@@ -49,7 +50,7 @@ export default function BeerCard({ beer, onRate, onDelete, index = 0 }: BeerCard
         };
 
         fetchUserRating();
-    }, [beer.id, user]);
+    }, [beer.id, user, refreshTrigger]);
 
     return (
         <motion.div
@@ -140,9 +141,6 @@ export default function BeerCard({ beer, onRate, onDelete, index = 0 }: BeerCard
                                                     }`}
                                             />
                                         ))}
-                                        {userRating && (
-                                            <span className="text-amber-500 font-medium text-xs ml-1">{userRating.taste}</span>
-                                        )}
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-between">
@@ -157,9 +155,6 @@ export default function BeerCard({ beer, onRate, onDelete, index = 0 }: BeerCard
                                                     }`}
                                             />
                                         ))}
-                                        {userRating && (
-                                            <span className="text-amber-500 font-medium text-xs ml-1">{userRating.mouthfeel}</span>
-                                        )}
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-between">
@@ -174,9 +169,6 @@ export default function BeerCard({ beer, onRate, onDelete, index = 0 }: BeerCard
                                                     }`}
                                             />
                                         ))}
-                                        {userRating && (
-                                            <span className="text-amber-500 font-medium text-xs ml-1">{userRating.overall}</span>
-                                        )}
                                     </div>
                                 </div>
                             </>

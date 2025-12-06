@@ -23,6 +23,7 @@ export default function SessionDetails() {
     // Rating Modal State
     const [isRateModalOpen, setIsRateModalOpen] = useState(false);
     const [selectedBeer, setSelectedBeer] = useState<Beer | null>(null);
+    const [ratingUpdateTrigger, setRatingUpdateTrigger] = useState(0);
 
     // Delete Confirmation State
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -204,6 +205,7 @@ export default function SessionDetails() {
                                 key={beer.id}
                                 beer={beer}
                                 index={index}
+                                refreshTrigger={ratingUpdateTrigger}
                                 onRate={() => handleRateClick(beer)}
                                 onDelete={isHost ? () => handleDeleteBeer(beer.id) : undefined}
                             />
@@ -226,8 +228,7 @@ export default function SessionDetails() {
                     beer={selectedBeer}
                     sessionId={session.id}
                     onRatingSubmitted={() => {
-                        // Optional: Refresh data or show success message
-                        console.log('Rating submitted!');
+                        setRatingUpdateTrigger(prev => prev + 1);
                     }}
                 />
             )}

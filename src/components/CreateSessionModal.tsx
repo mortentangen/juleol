@@ -121,7 +121,7 @@ export default function CreateSessionModal({ isOpen, onClose, onSessionCreated }
                                     ) : (
                                         <>
                                             <Plus className="w-5 h-5 mr-2" />
-                                            Opprett ølsmaking
+                                            Opprett
                                         </>
                                     )}
                                 </button>
