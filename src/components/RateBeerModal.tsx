@@ -41,7 +41,7 @@ export default function RateBeerModal({
                     .eq('beer_id', beer.id)
                     .eq('user_id', user.id)
                     .eq('session_id', sessionId)
-                    .single();
+                    .maybeSingle();
 
                 if (data) {
                     setTaste(data.taste || 0);

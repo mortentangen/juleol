@@ -112,7 +112,7 @@ export default function JoinSessionModal({ isOpen, onClose, onSessionJoined }: J
                                 <div className="p-2 bg-amber-500/20 rounded-lg">
                                     <Users className="w-6 h-6 text-amber-500" />
                                 </div>
-                                <h2 className="text-xl font-bold text-white">Join ølsmaking</h2>
+                                <h2 className="text-xl font-bold text-white">Finn ølsmaking</h2>
                             </div>
                             <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
                                 <X className="w-6 h-6" />
@@ -158,7 +158,7 @@ export default function JoinSessionModal({ isOpen, onClose, onSessionJoined }: J
                                     disabled={loading || joinCode.length !== 6}
                                     className="flex-1 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white rounded-lg font-medium shadow-lg shadow-amber-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    {loading ? 'Blir med...' : 'Bli med i ølsmaking'}
+                                    {loading ? 'Leter...' : 'Join'}
                                 </button>
                             </div>
                         </form>
