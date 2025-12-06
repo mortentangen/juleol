@@ -169,7 +169,7 @@ export default function Leaderboard() {
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
                     <div className="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-slate-400">Loading leaderboard...</p>
+                    <p className="text-slate-400">Laster inn resultater...</p>
                 </div>
             </div>
         );
@@ -194,7 +194,7 @@ export default function Leaderboard() {
                                 <h1 className="text-lg sm:text-xl font-bold text-white truncate">{sessionName}</h1>
                                 <div className="flex items-center gap-1.5">
                                     <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-                                    <span className="text-xs text-slate-400">Live</span>
+                                    <span className="text-xs text-slate-400">Direkte</span>
                                 </div>
                             </div>
                         </div>
@@ -204,10 +204,10 @@ export default function Leaderboard() {
                             onChange={(e) => setFilterCriteria(e.target.value as any)}
                             className="bg-slate-800 border border-white/20 rounded-lg px-2 py-1 text-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                         >
-                            <option value="all">All</option>
-                            <option value="taste">Taste</option>
-                            <option value="mouthfeel">Mouthfeel</option>
-                            <option value="overall">Overall</option>
+                            <option value="all">Alle</option>
+                            <option value="taste">Smak</option>
+                            <option value="mouthfeel">Munnfølelse</option>
+                            <option value="overall">Helhet</option>
                         </select>
                     </div>
                 </div>
@@ -219,8 +219,8 @@ export default function Leaderboard() {
                         {beerScores.length === 0 ? (
                             <div className="glass rounded-xl p-8 text-center">
                                 <Trophy className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                                <h3 className="text-lg font-bold text-white mb-1">No Ratings Yet</h3>
-                                <p className="text-slate-400 text-sm">Start rating beers to see the leaderboard!</p>
+                                <h3 className="text-lg font-bold text-white mb-1">Ingen vurderinger ennå</h3>
+                                <p className="text-slate-400 text-sm">Begynn å vurdere øl for å se resultatlisten!</p>
                             </div>
                         ) : (
                             beerScores.map((score, index) => (
@@ -310,7 +310,7 @@ export default function Leaderboard() {
                             <div className="glass rounded-lg p-3">
                                 <div className="flex items-center gap-2 mb-2">
                                     <TrendingUp className="w-4 h-4 text-green-500" />
-                                    <h3 className="font-bold text-white text-sm">Most Optimistic</h3>
+                                    <h3 className="font-bold text-white text-sm">Mest optimistisk</h3>
                                 </div>
                                 <div className="text-center">
                                     <div className="text-lg font-bold text-green-500 truncate">{mostOptimistic.name}</div>
@@ -325,7 +325,7 @@ export default function Leaderboard() {
                             <div className="glass rounded-lg p-3">
                                 <div className="flex items-center gap-2 mb-2">
                                     <TrendingDown className="w-4 h-4 text-red-500" />
-                                    <h3 className="font-bold text-white text-sm">Most Critical</h3>
+                                    <h3 className="font-bold text-white text-sm">Mest kritisk</h3>
                                 </div>
                                 <div className="text-center">
                                     <div className="text-lg font-bold text-red-500 truncate">{mostCritical.name}</div>
@@ -339,7 +339,7 @@ export default function Leaderboard() {
                         <div className="glass rounded-lg p-3">
                             <div className="flex items-center gap-2 mb-2">
                                 <Target className="w-4 h-4 text-amber-500" />
-                                <h3 className="font-bold text-white text-sm">All Voters</h3>
+                                <h3 className="font-bold text-white text-sm">Alle deltakere</h3>
                             </div>
                             <div className="space-y-1">
                                 {voterStats.map((voter) => (

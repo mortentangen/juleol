@@ -42,7 +42,7 @@ export default function CreateSessionModal({ isOpen, onClose, onSessionCreated }
             setDate(new Date().toISOString().split('T')[0]);
         } catch (error) {
             console.error('Error creating session:', error);
-            alert('Failed to create session');
+            alert('Kunne ikke opprette samlingen');
         } finally {
             setLoading(false);
         }
@@ -67,7 +67,7 @@ export default function CreateSessionModal({ isOpen, onClose, onSessionCreated }
                         className="glass w-full max-w-md rounded-2xl shadow-2xl overflow-hidden relative z-10"
                     >
                         <div className="flex items-center justify-between p-6 border-b border-white/20">
-                            <h2 className="text-xl font-bold text-white">Create New Session</h2>
+                            <h2 className="text-xl font-bold text-white">Opprett ny ølsmaking</h2>
                             <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
                                 <X className="w-6 h-6" />
                             </button>
@@ -76,7 +76,7 @@ export default function CreateSessionModal({ isOpen, onClose, onSessionCreated }
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
                             <div>
                                 <label htmlFor="name" className="block text-sm font-medium text-slate-300 mb-1">
-                                    Session Name
+                                    Navn
                                 </label>
                                 <input
                                     id="name"
@@ -85,13 +85,13 @@ export default function CreateSessionModal({ isOpen, onClose, onSessionCreated }
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                     className="w-full bg-slate-800/50 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent placeholder-slate-500"
-                                    placeholder="e.g. Christmas Tasting 2025"
+                                    placeholder="f.eks. Juleølsmaking 2025"
                                 />
                             </div>
 
                             <div>
                                 <label htmlFor="date" className="block text-sm font-medium text-slate-300 mb-1">
-                                    Date
+                                    Dato
                                 </label>
                                 <input
                                     id="date"
@@ -109,7 +109,7 @@ export default function CreateSessionModal({ isOpen, onClose, onSessionCreated }
                                     onClick={onClose}
                                     className="px-4 py-2 text-slate-300 hover:text-white transition-colors font-medium"
                                 >
-                                    Cancel
+                                    Avbryt
                                 </button>
                                 <button
                                     type="submit"
@@ -117,11 +117,11 @@ export default function CreateSessionModal({ isOpen, onClose, onSessionCreated }
                                     className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white rounded-lg font-medium shadow-lg shadow-amber-500/20 transition-all disabled:opacity-50 flex items-center"
                                 >
                                     {loading ? (
-                                        'Creating...'
+                                        'Oppretter...'
                                     ) : (
                                         <>
                                             <Plus className="w-5 h-5 mr-2" />
-                                            Create Session
+                                            Opprett ølsmaking
                                         </>
                                     )}
                                 </button>

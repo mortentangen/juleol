@@ -30,16 +30,16 @@ export default function SessionCard({ session, index = 0 }: SessionCardProps) {
                             {isHost ? (
                                 <span className="flex items-center gap-1 px-2 py-0.5 bg-amber-500/20 text-amber-400 text-xs font-medium rounded-full border border-amber-500/30">
                                     <Crown className="w-3 h-3" />
-                                    Host
+                                    Vert
                                 </span>
                             ) : (
                                 <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 text-xs font-medium rounded-full border border-blue-500/30">
-                                    Participant
+                                    Deltaker
                                 </span>
                             )}
                         </div>
                         <p className="text-slate-300 text-sm mt-1">
-                            Code: <span className="font-mono text-amber-500">{session.join_code}</span>
+                            Kode: <span className="font-mono text-amber-500">{session.join_code}</span>
                         </p>
                     </div>
                     <div className="flex items-center">
