@@ -198,3 +198,82 @@ export const generateBeerCommentaryAudio = async (
         throw e;
     }
 };
+
+/**
+ * Generates audio explanation for a specific Fun Fact title.
+ */
+export const generateFunFactCommentaryAudio = async (
+    apiKey: string,
+    title: string,
+    winnerName: string,
+    statValue: string
+): Promise<ArrayBuffer> => {
+    const contextDescription = [
+        `SCENE: Juleølsmaking. Du er en skitten og frekk kommentator.`,
+        `TITTEL: "${title}".`,
+        `VINNER: ${winnerName}.`,
+        `BEGRUNNELSE: ${statValue}.`,
+        "OPPGAVE: Forklar hvorfor denne personen fikk denne tittelen med en grisete vri."
+    ].join("\n");
+
+    const systemPrompt = [
+        "Du snakker tydelig norsk bokmål. Unngå engelske ord.",
+        "Du er en skitten, frekk og kåt julebords-kommentator.",
+        "Bruk seksuelle antydninger og metaforer.",
+        "",
+        "KONTRAKT:",
+        "- Svar med NØYAKTIG 2 setninger.",
+        "- Maks 25 ord.",
+        "- Vær direkte knyttet til tittelen (Mest Bøg, Munnfølelse, etc).",
+        "- Gjør det personlig og flørtende/frekt mot vinneren.",
+        "",
+        "Eksempler:",
+        "Input: TITTEL: Munnfølelse-entusiast. VINNER: Lars.",
+        "Output: Lars vet nøyaktig hvordan han vil ha det i munnen. Han svelger ikke før konsistensen er helt perfekt.",
+        "",
+        "Input: TITTEL: Mest Bøg. VINNER: Per.",
+        "Output: Per liker å spille det trygt og kjedelig. Ingen overraskelser i senga med den karen, for å si det sånn.",
+    ].join("\n");
+
+    try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify({
+                model: "gpt-4o-audio-preview",
+                modalities: ["text", "audio"],
+                audio: { voice: "onyx", format: "mp3" },
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: contextDescription },
+                ],
+                max_tokens: 500, // Short output enforced by prompt
+                temperature: 1.0,
+            }),
+        });
+
+        if (!response.ok) {
+            const err = await response.json().catch(() => null);
+            throw new Error(err?.error?.message ?? "Failed to generate fun fact audio");
+        }
+
+        const json = await response.json();
+        const audioData = json.choices[0]?.message?.audio?.data;
+
+        if (!audioData) throw new Error("No audio data received");
+
+        const binaryString = atob(audioData as string);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        return bytes.buffer;
+    } catch (e) {
+        console.error("Fun fact audio failed", e);
+        throw e;
+    }
+};

@@ -20,6 +20,9 @@ interface FunFactCardProps {
     delay?: number;
 }
 
+import { generateFunFactCommentaryAudio } from '../services/openaiService';
+
+// ... interface FunFactCardProps moved to bottom or kept here, but I need to ensure Leaderboard is exported default
 export default function Leaderboard() {
     const { id } = useParams<{ id: string }>();
     const [sessionName, setSessionName] = useState('');
@@ -112,6 +115,46 @@ export default function Leaderboard() {
             supabase.removeChannel(channel);
         };
     }, [id, filterCriteria, fetchLeaderboardData]);
+
+    const [playingFunFact, setPlayingFunFact] = useState<string | null>(null);
+
+    const handleFunFactClick = async (title: string, name: string, value: string) => {
+        if (playingFunFact) return; // Prevent multiple
+        if (!liveMode) {
+            // Optional: Alert user to turn on live mode? Or just play anyway?
+            // Let's just play anyway but need API key
+        }
+
+        const apiKey = localStorage.getItem('openai_api_key');
+        if (!apiKey) {
+            setIsApiKeyModalOpen(true);
+            return;
+        }
+
+        try {
+            setPlayingFunFact(title);
+
+            // Generate audio
+            const audioBuffer = await generateFunFactCommentaryAudio(apiKey, title, name, value);
+
+            // Play it
+            const blob = new Blob([audioBuffer], { type: 'audio/mpeg' });
+            const url = URL.createObjectURL(blob);
+
+            if (audioRef.current) {
+                audioRef.current.src = url;
+                audioRef.current.play();
+                audioRef.current.onended = () => {
+                    setPlayingFunFact(null);
+                    URL.revokeObjectURL(url);
+                };
+            }
+        } catch (error) {
+            console.error("Failed to play fun fact audio", error);
+            setPlayingFunFact(null);
+            alert("Kunne ikke generere lyd for denne tittelen. Sjekk API-nøkkel.");
+        }
+    };
 
     const getRankEmoji = (index: number) => {
         if (index === 0) return '🥇';
@@ -339,15 +382,42 @@ export default function Leaderboard() {
                         {mostCritical && voterStats.length > 1 && <FunFactCard title="Mest kritisk" icon={TrendingDown} color="text-red-500" name={mostCritical.name} value={`Snitt: ${mostCritical.avgRating.toFixed(1)}p`} />}
 
                         {/* 2. Fun Stats */}
-                        {funStats.tasteMaster && <FunFactCard title="Smaksdommeren" icon={Star} color="text-amber-400" name={funStats.tasteMaster.name} value={`Snitt smak: ${funStats.tasteMaster.score.toFixed(1)}`} delay={0.1} />}
-                        {funStats.mouthfeelMaster && <FunFactCard title="Munnfølelse-entusiast" icon={Target} color="text-blue-400" name={funStats.mouthfeelMaster.name} value={`Snitt munn.: ${funStats.mouthfeelMaster.score.toFixed(1)}`} delay={0.2} />}
+                        {funStats.tasteMaster && <FunFactCard
+                            title="Smaksdommeren"
+                            icon={Star}
+                            color="text-amber-400"
+                            name={funStats.tasteMaster.name}
+                            value={`Snitt smak: ${funStats.tasteMaster.score.toFixed(1)}`}
+                            delay={0.1}
+                            onClick={() => handleFunFactClick("Smaksdommeren", funStats.tasteMaster!.name, `Høyeste snitt på smak (${funStats.tasteMaster!.score.toFixed(1)})`)}
+                            isLoading={playingFunFact === "Smaksdommeren"}
+                        />}
+                        {funStats.mouthfeelMaster && <FunFactCard
+                            title="Munnfølelse-entusiast"
+                            icon={Target}
+                            color="text-blue-400"
+                            name={funStats.mouthfeelMaster.name}
+                            value={`Snitt munn.: ${funStats.mouthfeelMaster.score.toFixed(1)}`}
+                            delay={0.2}
+                            onClick={() => handleFunFactClick("Munnfølelse-entusiast", funStats.mouthfeelMaster!.name, `Elsker munnfølelse (${funStats.mouthfeelMaster!.score.toFixed(1)})`)}
+                            isLoading={playingFunFact === "Munnfølelse-entusiast"}
+                        />}
 
                         {funStats.hater && <FunFactCard title="Hilsen fra Helvete" icon={TrendingDown} color="text-red-600" name={funStats.hater.name} value={`${funStats.hater.score}p til ${funStats.hater.beerName}`} delay={0.3} />}
                         {funStats.lover && <FunFactCard title="Halleluja-stemning" icon={TrendingUp} color="text-yellow-400" name={funStats.lover.name} value={`${funStats.lover.count} fullpottere!`} delay={0.4} />}
 
                         {funStats.maverick && <FunFactCard title="Berg-og-dal-bane" icon={TrendingUp} color="text-purple-400" name={funStats.maverick.name} value="Mest varierte karakterer" delay={0.5} />}
                         {funStats.hipster && <FunFactCard title="Hipsteren" icon={Target} color="text-pink-400" name={funStats.hipster.name} value="Mest uenig med røkla" delay={0.6} />}
-                        {funStats.mestBog && <FunFactCard title="Mest Bøg" icon={Feather} color="text-rose-400" name={funStats.mestBog.name} value="Spiller det trygt" delay={0.65} />}
+                        {funStats.mestBog && <FunFactCard
+                            title="Mest Bøg"
+                            icon={Feather}
+                            color="text-rose-400"
+                            name={funStats.mestBog.name}
+                            value="Spiller det trygt"
+                            delay={0.65}
+                            onClick={() => handleFunFactClick("Mest Bøg", funStats.mestBog!.name, "Lavest standardavvik (kjedelig/trygg)")}
+                            isLoading={playingFunFact === "Mest Bøg"}
+                        />}
                         {funStats.chatterbox && <FunFactCard title="Skrivekløe" icon={Star} color="text-cyan-400" name={funStats.chatterbox.name} value={`${funStats.chatterbox.count} kommentarer`} delay={0.7} />}
 
                         {/* Summary List */}
@@ -372,7 +442,7 @@ export default function Leaderboard() {
                 isOpen={isApiKeyModalOpen}
                 onClose={() => setIsApiKeyModalOpen(false)}
                 onSave={() => {
-                    // Optionally try to toggle live mode again immediately
+                    // Optionally try to toggle live mode again
                     toggleLiveMode();
                 }}
             />
@@ -380,18 +450,39 @@ export default function Leaderboard() {
     );
 }
 
-function FunFactCard({ title, icon: Icon, color, name, value, delay = 0 }: FunFactCardProps) {
+interface FunFactCardProps {
+    title: string;
+    icon: React.ElementType;
+    color: string;
+    name: string;
+    value: string;
+    delay?: number;
+    onClick?: () => void;
+    isLoading?: boolean;
+}
+
+function FunFactCard({ title, icon: Icon, color, name, value, delay = 0, onClick, isLoading }: FunFactCardProps) {
     return (
         <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay }}
-            className="glass rounded-lg p-3 border-l-2 border-current"
-            style={{ borderColor: 'currentColor' }} // This doesn't work with tailwind text colors directly on border
+            onClick={onClick}
+            className={`glass rounded-lg p-3 border-l-2 border-current relative overflow-hidden ${onClick ? 'cursor-pointer hover:bg-white/5 transition-colors group' : ''}`}
+            style={{ borderColor: 'currentColor' }}
         >
+            {isLoading && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10 backdrop-blur-[1px]">
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                </div>
+            )}
+
             <div className={`flex items-center gap-2 mb-1 ${color}`}>
                 <Icon className="w-4 h-4" />
                 <h3 className="font-bold text-xs uppercase tracking-wider">{title}</h3>
+                {onClick && !isLoading && (
+                    <Volume2 className="w-3 h-3 ml-auto opacity-0 group-hover:opacity-100 transition-opacity text-slate-400" />
+                )}
             </div>
             <div>
                 <div className={`text-base font-bold text-white truncate`}>{name}</div>
