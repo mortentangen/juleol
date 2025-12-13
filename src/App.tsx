@@ -4,6 +4,8 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import SessionDetails from './pages/SessionDetails';
 import Leaderboard from './pages/Leaderboard';
+import Snowfall from './components/Snowfall';
+import ChristmasDecorations from './components/ChristmasDecorations';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -23,6 +25,8 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+        <ChristmasDecorations />
+        <Snowfall />
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />

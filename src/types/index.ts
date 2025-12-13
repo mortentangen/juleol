@@ -18,6 +18,7 @@ export interface Beer {
     image_url?: string;
     addedBy?: {
         full_name: string | null;
+        email: string | null;
         avatar_url?: string | null;
     };
 }
