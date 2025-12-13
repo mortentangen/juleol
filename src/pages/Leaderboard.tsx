@@ -1,9 +1,9 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getDisplayName } from '../utils/displayName';
-import { ArrowLeft, Trophy, TrendingUp, TrendingDown, Target, Star, Volume2, Radio } from 'lucide-react';
+import { ArrowLeft, Trophy, TrendingUp, TrendingDown, Target, Star, Volume2, Radio, MessageSquare } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { calculateLeaderboardStats, type BeerScore, type VoterStats, type FunStats, type RatingWithRelations } from '../services/leaderboardService';
 import TalkingSanta from '../components/TalkingSanta';
 import { useLiveCommentator } from '../hooks/useLiveCommentator';
@@ -29,6 +29,7 @@ export default function Leaderboard() {
     const [filterCriteria, setFilterCriteria] = useState<FilterCriteria>('all');
     const [loading, setLoading] = useState(true);
     const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
+    const [expandedBeerId, setExpandedBeerId] = useState<string | null>(null);
 
     // AI Live Commentator Hook
     const { liveMode, toggleLiveMode, isPlaying, audioRef } = useLiveCommentator({
@@ -212,7 +213,8 @@ export default function Leaderboard() {
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: index * 0.02 }}
-                                    className={`glass rounded-lg p-2.5 ${index === 0 ? 'border border-amber-500/50' : ''
+                                    onClick={() => setExpandedBeerId(expandedBeerId === score.beer.id ? null : score.beer.id)}
+                                    className={`glass rounded-lg p-2.5 cursor-pointer transition-colors hover:bg-white/5 ${index === 0 ? 'border border-amber-500/50' : ''
                                         }`}
                                 >
                                     {/* Header Row */}
@@ -283,6 +285,47 @@ export default function Leaderboard() {
                                             );
                                         })}
                                     </div>
+
+                                    {/* Expanded Comments View */}
+                                    <AnimatePresence>
+                                        {expandedBeerId === score.beer.id && (
+                                            <motion.div
+                                                initial={{ height: 0, opacity: 0 }}
+                                                animate={{ height: 'auto', opacity: 1 }}
+                                                exit={{ height: 0, opacity: 0 }}
+                                                className="overflow-hidden"
+                                            >
+                                                <div className="pt-4 mt-4 border-t border-white/10 space-y-3">
+                                                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                                                        <MessageSquare className="w-4 h-4" />
+                                                        Kommentarer ({score.ratings.filter(r => r.comment).length})
+                                                    </h4>
+
+                                                    {score.ratings.filter(r => r.comment && r.comment.trim().length > 0).length === 0 ? (
+                                                        <p className="text-slate-500 text-sm italic">Ingen kommentarer ennå.</p>
+                                                    ) : (
+                                                        <div className="grid gap-2">
+                                                            {score.ratings
+                                                                .filter(r => r.comment && r.comment.trim().length > 0)
+                                                                .map(rating => (
+                                                                    <div key={rating.id} className="bg-black/20 rounded p-3 text-sm">
+                                                                        <div className="flex items-center justify-between mb-1">
+                                                                            <span className="font-bold text-amber-500 text-xs">
+                                                                                {getDisplayName(rating.profiles?.full_name, rating.profiles?.email)}
+                                                                            </span>
+                                                                            <span className="text-slate-500 text-[10px]">
+                                                                                {rating.taste + rating.mouthfeel + rating.overall}p
+                                                                            </span>
+                                                                        </div>
+                                                                        <p className="text-slate-300 italic">"{rating.comment}"</p>
+                                                                    </div>
+                                                                ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
                                 </motion.div>
                             ))
                         )}
