@@ -33,6 +33,7 @@ export interface FunStats {
     chatterbox?: { name: string; count: number };
     maverick?: { name: string; deviation: number };
     hipster?: { name: string; score: number };
+    mostConsistent?: { name: string; consistency: number };
 }
 
 export interface LeaderboardData {
@@ -231,6 +232,10 @@ export function calculateLeaderboardStats(ratings: RatingWithRelations[], filter
     // This person disagrees with the group average the most (up or down)
     const hipster = [...qualifiedStats].sort((a, b) => b.totalDeviations - a.totalDeviations)[0];
     if (hipster && hipster.totalDeviations > 0) newFunStats.hipster = { name: hipster.name, score: hipster.totalDeviations };
+
+    // 8. Jevneste dommer (Lowest standard deviation across the rater's beer scores)
+    const mostConsistent = [...qualifiedStats].sort((a, b) => a.stdDev - b.stdDev)[0];
+    if (mostConsistent) newFunStats.mostConsistent = { name: mostConsistent.name, consistency: mostConsistent.stdDev };
 
     return {
         beerScores: sortedScores,
