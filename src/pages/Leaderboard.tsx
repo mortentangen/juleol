@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { calculateLeaderboardStats, type BeerScore, type VoterStats, type FunStats, type RatingWithRelations } from '../services/leaderboardService';
 import TalkingSanta from '../components/TalkingSanta';
 import { useLiveCommentator } from '../hooks/useLiveCommentator';
+import ApiKeyModal from '../components/ApiKeyModal';
 
 type FilterCriteria = 'all' | 'taste' | 'mouthfeel' | 'overall';
 
@@ -27,12 +28,13 @@ export default function Leaderboard() {
     const [funStats, setFunStats] = useState<FunStats>({});
     const [filterCriteria, setFilterCriteria] = useState<FilterCriteria>('all');
     const [loading, setLoading] = useState(true);
+    const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
 
     // AI Live Commentator Hook
     const { liveMode, toggleLiveMode, isPlaying, audioRef } = useLiveCommentator({
         beerScores,
         voterStats,
-        onApiKeyMissing: () => alert("API key mangler! Legg den inn manuelt i koden eller .env foreløpig.") // Simple fallback or just log
+        onApiKeyMissing: () => setIsApiKeyModalOpen(true)
     });
 
     const fetchLeaderboardData = useCallback(async () => {
@@ -322,6 +324,14 @@ export default function Leaderboard() {
                     </div>
                 </div>
             </div>
+            <ApiKeyModal
+                isOpen={isApiKeyModalOpen}
+                onClose={() => setIsApiKeyModalOpen(false)}
+                onSave={() => {
+                    // Optionally try to toggle live mode again immediately
+                    toggleLiveMode();
+                }}
+            />
         </div>
     );
 }
