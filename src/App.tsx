@@ -4,6 +4,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import SessionDetails from './pages/SessionDetails';
 import Leaderboard from './pages/Leaderboard';
+import SessionComments from './pages/SessionComments';
 import Snowfall from './components/Snowfall';
 import ChristmasDecorations from './components/ChristmasDecorations';
 
@@ -31,6 +32,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/session/:id" element={<PrivateRoute><SessionDetails /></PrivateRoute>} />
+          <Route path="/session/:id/comments" element={<PrivateRoute><SessionComments /></PrivateRoute>} />
           <Route path="/session/:id/leaderboard" element={<PrivateRoute><Leaderboard /></PrivateRoute>} />
         </Routes>
       </Router>
