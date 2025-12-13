@@ -1,12 +1,23 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getDisplayName } from '../utils/displayName';
 import { ArrowLeft, Trophy, TrendingUp, TrendingDown, Target, Star, Volume2, Radio } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { motion } from 'framer-motion';
-import { calculateLeaderboardStats, type BeerScore, type VoterStats, type FunStats } from '../services/leaderboardService';
+import { calculateLeaderboardStats, type BeerScore, type VoterStats, type FunStats, type RatingWithRelations } from '../services/leaderboardService';
 import TalkingSanta from '../components/TalkingSanta';
 import { useLiveCommentator } from '../hooks/useLiveCommentator';
+
+type FilterCriteria = 'all' | 'taste' | 'mouthfeel' | 'overall';
+
+interface FunFactCardProps {
+    title: string;
+    icon: React.ElementType;
+    color: string;
+    name: string;
+    value: string;
+    delay?: number;
+}
 
 export default function Leaderboard() {
     const { id } = useParams<{ id: string }>();
@@ -14,7 +25,7 @@ export default function Leaderboard() {
     const [beerScores, setBeerScores] = useState<BeerScore[]>([]);
     const [voterStats, setVoterStats] = useState<VoterStats[]>([]);
     const [funStats, setFunStats] = useState<FunStats>({});
-    const [filterCriteria, setFilterCriteria] = useState<'all' | 'taste' | 'mouthfeel' | 'overall'>('all');
+    const [filterCriteria, setFilterCriteria] = useState<FilterCriteria>('all');
     const [loading, setLoading] = useState(true);
 
     // AI Live Commentator Hook
@@ -24,7 +35,7 @@ export default function Leaderboard() {
         onApiKeyMissing: () => alert("API key mangler! Legg den inn manuelt i koden eller .env foreløpig.") // Simple fallback or just log
     });
 
-    const fetchLeaderboardData = async () => {
+    const fetchLeaderboardData = useCallback(async () => {
         if (!id) return;
 
         try {
@@ -48,7 +59,7 @@ export default function Leaderboard() {
             if (!ratings) return;
 
             // Use service to calculate all stats
-            const result = calculateLeaderboardStats(ratings, filterCriteria);
+            const result = calculateLeaderboardStats(ratings as unknown as RatingWithRelations[], filterCriteria);
 
             setBeerScores(result.beerScores);
             setVoterStats(result.voterStats);
@@ -59,7 +70,13 @@ export default function Leaderboard() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [id, filterCriteria]);
+
+    // ... (rest of component, skipping to the select part)
+
+    // Use replace_file_content smartly. I don't want to replace huge chunks if I can avoid it.
+    // I will split this.
+
 
     useEffect(() => {
         fetchLeaderboardData();
@@ -91,7 +108,7 @@ export default function Leaderboard() {
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [id, filterCriteria]);
+    }, [id, filterCriteria, fetchLeaderboardData]);
 
     const getRankEmoji = (index: number) => {
         if (index === 0) return '🥇';
@@ -159,7 +176,7 @@ export default function Leaderboard() {
 
                             <select
                                 value={filterCriteria}
-                                onChange={(e) => setFilterCriteria(e.target.value as any)}
+                                onChange={(e) => setFilterCriteria(e.target.value as FilterCriteria)}
                                 className="bg-slate-800 border border-white/20 rounded-lg px-3 py-1 text-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                             >
                                 <option value="all">Alle</option>
@@ -309,7 +326,7 @@ export default function Leaderboard() {
     );
 }
 
-function FunFactCard({ title, icon: Icon, color, name, value, delay = 0 }: any) {
+function FunFactCard({ title, icon: Icon, color, name, value, delay = 0 }: FunFactCardProps) {
     return (
         <motion.div
             initial={{ opacity: 0, x: 20 }}

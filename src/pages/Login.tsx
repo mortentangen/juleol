@@ -17,8 +17,9 @@ export default function Login() {
                 },
             });
             if (error) throw error;
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            const errorMessage = (err as Error)?.message || "En ukjent feil oppstod";
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }

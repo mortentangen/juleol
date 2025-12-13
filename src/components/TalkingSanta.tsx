@@ -27,7 +27,7 @@ export default function TalkingSanta({ isPlaying }: TalkingSantaProps) {
                     className="fixed bottom-4 right-4 z-50 w-36 h-36 md:w-52 md:h-52 drop-shadow-2xl pointer-events-none"
                 >
                     <motion.img
-                        src="/src/assets/santa.png"
+                        src={santaImage}
                         alt="Talking Santa"
                         className="w-full h-full object-contain rounded-full border-4 border-white shadow-lg"
                         animate={{

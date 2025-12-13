@@ -8,7 +8,7 @@ export interface BeerScore {
     avgMouthfeel: number;
     avgOverall: number;
     ratingCount: number;
-    ratings: (Rating & { profiles: { full_name: string | null; email: string | null } })[];
+    ratings: RatingWithRelations[];
 }
 
 export interface VoterStats {
@@ -41,7 +41,16 @@ export interface LeaderboardData {
     funStats: FunStats;
 }
 
-export function calculateLeaderboardStats(ratings: any[], filterCriteria: 'all' | 'taste' | 'mouthfeel' | 'overall'): LeaderboardData {
+// Define types for joined data
+export interface RatingWithRelations extends Rating {
+    beers: Beer;
+    profiles: {
+        full_name: string | null;
+        email: string | null;
+    } | null;
+}
+
+export function calculateLeaderboardStats(ratings: RatingWithRelations[], filterCriteria: 'all' | 'taste' | 'mouthfeel' | 'overall'): LeaderboardData {
     const beerMap = new Map<string, BeerScore>();
     // Extended voter map to track all ratings for variance/stats
     const voterMap = new Map<string, {
@@ -58,7 +67,7 @@ export function calculateLeaderboardStats(ratings: any[], filterCriteria: 'all' 
     }>();
 
     // First pass: Calculate beer statistics (needed for deviations)
-    ratings.forEach((rating: any) => {
+    ratings.forEach((rating) => {
         const beerId = rating.beer_id;
         const beer = rating.beers;
 
@@ -93,7 +102,7 @@ export function calculateLeaderboardStats(ratings: any[], filterCriteria: 'all' 
     });
 
     // Second pass: Voter statistics
-    ratings.forEach((rating: any) => {
+    ratings.forEach((rating) => {
         const userId = rating.user_id;
         const beerId = rating.beer_id;
         const ratingTotalStars = rating.taste + rating.mouthfeel + rating.overall;
@@ -194,7 +203,7 @@ export function calculateLeaderboardStats(ratings: any[], filterCriteria: 'all' 
     if (mouthfeelMaster) newFunStats.mouthfeelMaster = { name: mouthfeelMaster.name, score: mouthfeelMaster.avgMouthfeel };
 
     // 3. Hater (Lowest single score)
-    let currentHater: any = null;
+    let currentHater: { name: string; beerName: string; score: number } | null = null;
     stats.forEach(s => {
         if (s.lowestScore) {
             if (!currentHater || s.lowestScore.score < currentHater.score) {
