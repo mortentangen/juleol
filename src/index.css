@@ -17,6 +17,9 @@ button {
 }
 
 body {
-    @apply bg-slate-950 text-white min-h-screen;
-    background: radial-gradient(circle at top center, #1e293b, #020617);
+    @apply bg-slate-950 text-white min-h-screen overflow-x-hidden;
+    background: radial-gradient(circle at top left, #1a2e1a, transparent 40%),
+        radial-gradient(circle at top right, #3a0a0a, transparent 40%),
+        radial-gradient(circle at bottom center, #020617, #1e293b);
+    background-color: #0f172a;
 }

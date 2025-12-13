@@ -147,28 +147,61 @@ export default function AddBeerModal({ isOpen, onClose, sessionId, onBeerAdded }
         setLoading(true);
 
         try {
-            // 1. Insert into beers table
-            const { data: beerData, error: beerError } = await supabase
+            let beerId: string;
+
+            // Check if a beer with the same name and brewery already exists
+            const { data: existingBeer, error: searchError } = await supabase
                 .from('beers')
-                .insert({
-                    name,
-                    brewery,
-                    style,
-                    abv: parseFloat(abv),
-                    description,
-                    image_url: imageUrl,
-                })
-                .select()
-                .single();
+                .select('id')
+                .ilike('name', name.trim())
+                .ilike('brewery', brewery.trim())
+                .maybeSingle();
 
-            if (beerError) throw beerError;
+            if (searchError) throw searchError;
 
-            // 2. Link to session
+            if (existingBeer) {
+                // Reuse existing beer
+                beerId = existingBeer.id;
+                console.log('Reusing existing beer:', beerId);
+            } else {
+                // Insert new beer
+                const { data: beerData, error: beerError } = await supabase
+                    .from('beers')
+                    .insert({
+                        name: name.trim(),
+                        brewery: brewery.trim(),
+                        style,
+                        abv: parseFloat(abv),
+                        description,
+                        image_url: imageUrl,
+                    })
+                    .select()
+                    .single();
+
+                if (beerError) throw beerError;
+                beerId = beerData.id;
+            }
+
+            // Check if this beer is already in this session
+            const { data: existingLink } = await supabase
+                .from('session_beers')
+                .select('id')
+                .eq('session_id', sessionId)
+                .eq('beer_id', beerId)
+                .maybeSingle();
+
+            if (existingLink) {
+                alert('Denne ølen er allerede lagt til i denne sesjonen!');
+                setLoading(false);
+                return;
+            }
+
+            // Link to session
             const { error: linkError } = await supabase
                 .from('session_beers')
                 .insert({
                     session_id: sessionId,
-                    beer_id: beerData.id,
+                    beer_id: beerId,
                     added_by: user?.id,
                 });
 

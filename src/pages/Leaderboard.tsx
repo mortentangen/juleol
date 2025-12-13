@@ -1,34 +1,28 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Trophy, TrendingUp, TrendingDown, Target, Star } from 'lucide-react';
+import { getDisplayName } from '../utils/displayName';
+import { ArrowLeft, Trophy, TrendingUp, TrendingDown, Target, Star, Volume2, Radio } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import type { Beer, Rating } from '../types';
 import { motion } from 'framer-motion';
-
-interface BeerScore {
-    beer: Beer;
-    avgScore: number;
-    avgTaste: number;
-    avgMouthfeel: number;
-    avgOverall: number;
-    ratingCount: number;
-    ratings: (Rating & { profiles: { full_name: string | null } })[];
-}
-
-interface VoterStats {
-    userId: string;
-    name: string;
-    avgRating: number;
-    ratingCount: number;
-}
+import { calculateLeaderboardStats, type BeerScore, type VoterStats, type FunStats } from '../services/leaderboardService';
+import TalkingSanta from '../components/TalkingSanta';
+import { useLiveCommentator } from '../hooks/useLiveCommentator';
 
 export default function Leaderboard() {
     const { id } = useParams<{ id: string }>();
     const [sessionName, setSessionName] = useState('');
     const [beerScores, setBeerScores] = useState<BeerScore[]>([]);
     const [voterStats, setVoterStats] = useState<VoterStats[]>([]);
+    const [funStats, setFunStats] = useState<FunStats>({});
     const [filterCriteria, setFilterCriteria] = useState<'all' | 'taste' | 'mouthfeel' | 'overall'>('all');
     const [loading, setLoading] = useState(true);
+
+    // AI Live Commentator Hook
+    const { liveMode, toggleLiveMode, isPlaying, audioRef } = useLiveCommentator({
+        beerScores,
+        voterStats,
+        onApiKeyMissing: () => alert("API key mangler! Legg den inn manuelt i koden eller .env foreløpig.") // Simple fallback or just log
+    });
 
     const fetchLeaderboardData = async () => {
         if (!id) return;
@@ -53,76 +47,13 @@ export default function Leaderboard() {
 
             if (!ratings) return;
 
-            const beerMap = new Map<string, BeerScore>();
-            const voterMap = new Map<string, { total: number; count: number; name: string }>();
+            // Use service to calculate all stats
+            const result = calculateLeaderboardStats(ratings, filterCriteria);
 
-            ratings.forEach((rating: any) => {
-                const beerId = rating.beer_id;
-                const beer = rating.beers;
+            setBeerScores(result.beerScores);
+            setVoterStats(result.voterStats);
+            setFunStats(result.funStats);
 
-                if (!beerMap.has(beerId)) {
-                    beerMap.set(beerId, {
-                        beer,
-                        avgScore: 0,
-                        avgTaste: 0,
-                        avgMouthfeel: 0,
-                        avgOverall: 0,
-                        ratingCount: 0,
-                        ratings: [],
-                    });
-                }
-
-                const beerScore = beerMap.get(beerId)!;
-                beerScore.ratings.push(rating);
-                beerScore.ratingCount++;
-                beerScore.avgTaste += rating.taste;
-                beerScore.avgMouthfeel += rating.mouthfeel;
-                beerScore.avgOverall += rating.overall;
-
-                const userId = rating.user_id;
-                if (!voterMap.has(userId)) {
-                    voterMap.set(userId, {
-                        total: 0,
-                        count: 0,
-                        name: rating.profiles?.full_name || 'Anonymous',
-                    });
-                }
-                const voter = voterMap.get(userId)!;
-                voter.total += rating.overall;
-                voter.count++;
-            });
-
-            const scores = Array.from(beerMap.values()).map((score) => ({
-                ...score,
-                avgTaste: score.avgTaste / score.ratingCount,
-                avgMouthfeel: score.avgMouthfeel / score.ratingCount,
-                avgOverall: score.avgOverall / score.ratingCount,
-                avgScore: (score.avgTaste + score.avgMouthfeel + score.avgOverall) / 3,
-            }));
-
-            const sortedScores = scores.sort((a, b) => {
-                switch (filterCriteria) {
-                    case 'taste':
-                        return b.avgTaste - a.avgTaste;
-                    case 'mouthfeel':
-                        return b.avgMouthfeel - a.avgMouthfeel;
-                    case 'overall':
-                        return b.avgOverall - a.avgOverall;
-                    default:
-                        return b.avgScore - a.avgScore;
-                }
-            });
-
-            setBeerScores(sortedScores);
-
-            const stats = Array.from(voterMap.entries()).map(([userId, data]) => ({
-                userId,
-                name: data.name,
-                avgRating: data.total / data.count,
-                ratingCount: data.count,
-            }));
-
-            setVoterStats(stats.sort((a, b) => b.avgRating - a.avgRating));
         } catch (error) {
             console.error('Error fetching leaderboard:', error);
         } finally {
@@ -143,11 +74,19 @@ export default function Leaderboard() {
                     table: 'ratings',
                     filter: `session_id=eq.${id}`,
                 },
-                () => {
+                (payload) => {
+                    console.log('Real-time update received:', payload);
                     fetchLeaderboardData();
                 }
             )
-            .subscribe();
+            .subscribe((status) => {
+                console.log('Subscription status:', status);
+                if (status === 'SUBSCRIBED') {
+                    console.log('Successfully subscribed to leaderboard updates');
+                } else if (status === 'CHANNEL_ERROR') {
+                    console.error('Error subscribing to leaderboard updates');
+                }
+            });
 
         return () => {
             supabase.removeChannel(channel);
@@ -176,7 +115,7 @@ export default function Leaderboard() {
     }
 
     return (
-        <div className="min-h-screen pb-4">
+        <div className="min-h-screen pb-8">
             <header className="glass sticky top-0 z-40 border-b border-white/5">
                 <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2">
                     <div className="flex items-center justify-between gap-3">
@@ -199,19 +138,44 @@ export default function Leaderboard() {
                             </div>
                         </div>
 
-                        <select
-                            value={filterCriteria}
-                            onChange={(e) => setFilterCriteria(e.target.value as any)}
-                            className="bg-slate-800 border border-white/20 rounded-lg px-2 py-1 text-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
-                        >
-                            <option value="all">Alle</option>
-                            <option value="taste">Smak</option>
-                            <option value="mouthfeel">Munnfølelse</option>
-                            <option value="overall">Helhet</option>
-                        </select>
+                        <div className="flex gap-2 items-center">
+                            {/* Hidden Audio Element */}
+                            <audio ref={audioRef} className="hidden" />
+
+                            {/* Live Mode Toggle */}
+                            <button
+                                onClick={toggleLiveMode}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all ${liveMode
+                                    ? 'bg-red-500/20 border-red-500 text-red-500 animate-pulse'
+                                    : 'bg-slate-800 border-white/10 text-slate-400 hover:text-white'
+                                    }`}
+                                title={liveMode ? "Live Kommentator PÅ" : "Skru på Live Kommentator"}
+                            >
+                                {liveMode ? <Radio className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                                <span className="hidden sm:inline">{liveMode ? "LIVE" : "AI Lyd"}</span>
+                            </button>
+
+
+
+                            <select
+                                value={filterCriteria}
+                                onChange={(e) => setFilterCriteria(e.target.value as any)}
+                                className="bg-slate-800 border border-white/20 rounded-lg px-3 py-1 text-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                            >
+                                <option value="all">Alle</option>
+                                <option value="taste">Smak</option>
+                                <option value="mouthfeel">Munnfølelse</option>
+                                <option value="overall">Helhet</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </header>
+
+            {/* Talking Santa Avatar */}
+            <TalkingSanta isPlaying={isPlaying} />
+
+
 
             <div className="max-w-7xl mx-auto px-3 sm:px-4 mt-3">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
@@ -271,10 +235,10 @@ export default function Leaderboard() {
                                                 <div
                                                     key={rating.id}
                                                     className="flex items-center gap-1.5 bg-slate-800/30 rounded px-2 py-1"
-                                                    title={`${rating.profiles?.full_name || 'Anonymous'}: ${totalStars}/${maxStars} stars`}
+                                                    title={`${getDisplayName(rating.profiles?.full_name, rating.profiles?.email)}: ${totalStars}/${maxStars} stars`}
                                                 >
                                                     <span className="text-white text-xs font-medium truncate max-w-[80px]">
-                                                        {rating.profiles?.full_name?.split(' ')[0] || 'Anon'}
+                                                        {getDisplayName(rating.profiles?.full_name, rating.profiles?.email)}
                                                     </span>
                                                     <div className="flex items-center gap-0.5">
                                                         {Array.from({ length: 5 }, (_, i) => {
@@ -306,37 +270,25 @@ export default function Leaderboard() {
                     </div>
 
                     <div className="space-y-3">
-                        {mostOptimistic && (
-                            <div className="glass rounded-lg p-3">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <TrendingUp className="w-4 h-4 text-green-500" />
-                                    <h3 className="font-bold text-white text-sm">Mest optimistisk</h3>
-                                </div>
-                                <div className="text-center">
-                                    <div className="text-lg font-bold text-green-500 truncate">{mostOptimistic.name}</div>
-                                    <div className="text-xs text-slate-400">
-                                        Avg: {mostOptimistic.avgRating.toFixed(1)}/5
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+                        {/* Fun Facts Column */}
 
-                        {mostCritical && voterStats.length > 1 && (
-                            <div className="glass rounded-lg p-3">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <TrendingDown className="w-4 h-4 text-red-500" />
-                                    <h3 className="font-bold text-white text-sm">Mest kritisk</h3>
-                                </div>
-                                <div className="text-center">
-                                    <div className="text-lg font-bold text-red-500 truncate">{mostCritical.name}</div>
-                                    <div className="text-xs text-slate-400">
-                                        Avg: {mostCritical.avgRating.toFixed(1)}/5
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+                        {/* 1. Optimist & Pessimist */}
+                        {mostOptimistic && <FunFactCard title="Mest optimistisk" icon={TrendingUp} color="text-green-500" name={mostOptimistic.name} value={`Snitt: ${mostOptimistic.avgRating.toFixed(1)}p`} />}
+                        {mostCritical && voterStats.length > 1 && <FunFactCard title="Mest kritisk" icon={TrendingDown} color="text-red-500" name={mostCritical.name} value={`Snitt: ${mostCritical.avgRating.toFixed(1)}p`} />}
 
-                        <div className="glass rounded-lg p-3">
+                        {/* 2. Fun Stats */}
+                        {funStats.tasteMaster && <FunFactCard title="Smaksdommeren" icon={Star} color="text-amber-400" name={funStats.tasteMaster.name} value={`Snitt smak: ${funStats.tasteMaster.score.toFixed(1)}`} delay={0.1} />}
+                        {funStats.mouthfeelMaster && <FunFactCard title="Munnfølelse-entusiast" icon={Target} color="text-blue-400" name={funStats.mouthfeelMaster.name} value={`Snitt munn.: ${funStats.mouthfeelMaster.score.toFixed(1)}`} delay={0.2} />}
+
+                        {funStats.hater && <FunFactCard title="Hilsen fra Helvete" icon={TrendingDown} color="text-red-600" name={funStats.hater.name} value={`${funStats.hater.score}p til ${funStats.hater.beerName}`} delay={0.3} />}
+                        {funStats.lover && <FunFactCard title="Halleluja-stemning" icon={TrendingUp} color="text-yellow-400" name={funStats.lover.name} value={`${funStats.lover.count} fullpottere!`} delay={0.4} />}
+
+                        {funStats.maverick && <FunFactCard title="Berg-og-dal-bane" icon={TrendingUp} color="text-purple-400" name={funStats.maverick.name} value="Mest varierte karakterer" delay={0.5} />}
+                        {funStats.hipster && <FunFactCard title="Hipsteren" icon={Target} color="text-pink-400" name={funStats.hipster.name} value="Mest uenig med røkla" delay={0.6} />}
+                        {funStats.chatterbox && <FunFactCard title="Skrivekløe" icon={Star} color="text-cyan-400" name={funStats.chatterbox.name} value={`${funStats.chatterbox.count} kommentarer`} delay={0.7} />}
+
+                        {/* Summary List */}
+                        <div className="glass rounded-lg p-3 mt-4">
                             <div className="flex items-center gap-2 mb-2">
                                 <Target className="w-4 h-4 text-amber-500" />
                                 <h3 className="font-bold text-white text-sm">Alle deltakere</h3>
@@ -345,7 +297,7 @@ export default function Leaderboard() {
                                 {voterStats.map((voter) => (
                                     <div key={voter.userId} className="flex items-center justify-between text-xs">
                                         <span className="text-slate-300 truncate">{voter.name}</span>
-                                        <span className="text-amber-500 font-medium flex-shrink-0 ml-2">{voter.avgRating.toFixed(1)}</span>
+                                        <span className="text-amber-500 font-medium flex-shrink-0 ml-2">{voter.avgRating.toFixed(1)}p</span>
                                     </div>
                                 ))}
                             </div>
@@ -354,5 +306,26 @@ export default function Leaderboard() {
                 </div>
             </div>
         </div>
+    );
+}
+
+function FunFactCard({ title, icon: Icon, color, name, value, delay = 0 }: any) {
+    return (
+        <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay }}
+            className="glass rounded-lg p-3 border-l-2 border-current"
+            style={{ borderColor: 'currentColor' }} // This doesn't work with tailwind text colors directly on border
+        >
+            <div className={`flex items-center gap-2 mb-1 ${color}`}>
+                <Icon className="w-4 h-4" />
+                <h3 className="font-bold text-xs uppercase tracking-wider">{title}</h3>
+            </div>
+            <div>
+                <div className={`text-base font-bold text-white truncate`}>{name}</div>
+                <div className="text-xs text-slate-400">{value}</div>
+            </div>
+        </motion.div>
     );
 }
