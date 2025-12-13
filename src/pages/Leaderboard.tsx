@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getDisplayName } from '../utils/displayName';
-import { ArrowLeft, Trophy, TrendingUp, TrendingDown, Target, Star, Volume2, Radio, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Trophy, TrendingUp, TrendingDown, Target, Star, Volume2, Radio, MessageSquare, Feather } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { calculateLeaderboardStats, type BeerScore, type VoterStats, type FunStats, type RatingWithRelations } from '../services/leaderboardService';
@@ -347,6 +347,7 @@ export default function Leaderboard() {
 
                         {funStats.maverick && <FunFactCard title="Berg-og-dal-bane" icon={TrendingUp} color="text-purple-400" name={funStats.maverick.name} value="Mest varierte karakterer" delay={0.5} />}
                         {funStats.hipster && <FunFactCard title="Hipsteren" icon={Target} color="text-pink-400" name={funStats.hipster.name} value="Mest uenig med røkla" delay={0.6} />}
+                        {funStats.mestBog && <FunFactCard title="Mest Bøg" icon={Feather} color="text-rose-400" name={funStats.mestBog.name} value="Spiller det trygt" delay={0.65} />}
                         {funStats.chatterbox && <FunFactCard title="Skrivekløe" icon={Star} color="text-cyan-400" name={funStats.chatterbox.name} value={`${funStats.chatterbox.count} kommentarer`} delay={0.7} />}
 
                         {/* Summary List */}

@@ -33,6 +33,7 @@ export interface FunStats {
     chatterbox?: { name: string; count: number };
     maverick?: { name: string; deviation: number };
     hipster?: { name: string; score: number };
+    mestBog?: { name: string; consistency: number };
 }
 
 export interface LeaderboardData {
@@ -231,6 +232,10 @@ export function calculateLeaderboardStats(ratings: RatingWithRelations[], filter
     // This person disagrees with the group average the most (up or down)
     const hipster = [...qualifiedStats].sort((a, b) => b.totalDeviations - a.totalDeviations)[0];
     if (hipster && hipster.totalDeviations > 0) newFunStats.hipster = { name: hipster.name, score: hipster.totalDeviations };
+
+    // 8. Mest Bøg (Lowest Standard Deviation - The most "safe" / boring rater)
+    const mestBog = [...qualifiedStats].sort((a, b) => a.stdDev - b.stdDev)[0];
+    if (mestBog) newFunStats.mestBog = { name: mestBog.name, consistency: mestBog.stdDev };
 
     return {
         beerScores: sortedScores,
