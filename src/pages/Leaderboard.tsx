@@ -125,7 +125,8 @@ export default function Leaderboard() {
             // Let's just play anyway but need API key
         }
 
-        const apiKey = localStorage.getItem('openai_api_key');
+        let apiKey = localStorage.getItem('openai_api_key') || import.meta.env.VITE_OPENAI_API_KEY;
+
         if (!apiKey) {
             setIsApiKeyModalOpen(true);
             return;
@@ -149,10 +150,18 @@ export default function Leaderboard() {
                     URL.revokeObjectURL(url);
                 };
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to play fun fact audio", error);
             setPlayingFunFact(null);
-            alert("Kunne ikke generere lyd for denne tittelen. Sjekk API-nøkkel.");
+
+            // If unauthorized/invalid key, prompt to enter new one
+            if (error.message?.includes('401') || error.message?.toLowerCase().includes('api key')) {
+                alert("API-nøkkelen ser ut til å være ugyldig. Vennligst legg inn på nytt.");
+                localStorage.removeItem('openai_api_key'); // Clear bad key
+                setIsApiKeyModalOpen(true);
+            } else {
+                alert(`Feil ved generering av lyd: ${error.message || 'Ukjent feil'}`);
+            }
         }
     };
 
