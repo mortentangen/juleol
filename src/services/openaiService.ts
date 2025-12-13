@@ -1,17 +1,21 @@
+import type { BeerScore } from './leaderboardService';
+
 /**
  * Generates beer commentary audio directly (text + audio in one call).
  * Focus: clear Norwegian + short, funny roasting that participants can handle.
  */
 export const generateBeerCommentaryAudio = async (
     apiKey: string,
-    beerScore: any,
-    allBeerScores: any[] = []
+    beerScore: BeerScore,
+    allBeerScores: BeerScore[] = []
 ): Promise<ArrayBuffer> => {
-    const getName = (profile: any): string => {
-        if (profile?.full_name && profile.full_name.trim().length > 0) {
+    const getName = (profile: { full_name: string | null; email: string | null } | null): string => {
+        if (!profile) return "Anonym";
+
+        if (profile.full_name && profile.full_name.trim().length > 0) {
             return profile.full_name.trim().split(" ")[0]!;
         }
-        if (profile?.email && profile.email.includes("@")) {
+        if (profile.email && profile.email.includes("@")) {
             const localPart = profile.email.split("@")[0] ?? "anonym";
             const firstName = (localPart.split(".")[0] ?? "anonym").trim();
             return firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
@@ -37,12 +41,12 @@ export const generateBeerCommentaryAudio = async (
     const avgScore = Number(beerScore?.avgScore ?? 0);
 
     const ratings = Array.isArray(beerScore?.ratings) ? beerScore.ratings : [];
-    const totalScores: Array<{ name: string; total: number; comment: string }> = ratings.map((r: any) => {
+    const totalScores: Array<{ name: string; total: number; comment: string }> = ratings.map((r) => {
         const taste = Number(r?.taste ?? 0);
         const mouthfeel = Number(r?.mouthfeel ?? 0);
         const overall = Number(r?.overall ?? 0);
         const total = clamp(taste + mouthfeel + overall, 0, 15);
-        const name = getName(r?.profiles);
+        const name = getName(r.profiles);
         const comment = sanitizeShort(r?.comment, 40);
         return { name, total, comment };
     });

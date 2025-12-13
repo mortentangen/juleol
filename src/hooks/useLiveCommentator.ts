@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, RefObject } from 'react';
+import { useState, useEffect, useRef, type RefObject } from 'react';
 import { generateBeerCommentaryAudio } from '../services/openaiService';
 import type { BeerScore, VoterStats } from '../services/leaderboardService';
 
@@ -12,7 +12,7 @@ interface UseLiveCommentatorReturn {
     liveMode: boolean;
     toggleLiveMode: () => void;
     isPlaying: boolean;
-    audioRef: RefObject<HTMLAudioElement>;
+    audioRef: RefObject<HTMLAudioElement | null>;
 }
 
 export const useLiveCommentator = ({
@@ -38,10 +38,10 @@ export const useLiveCommentator = ({
     // Helper to play a realistic "sleigh bell" sound using Jingle Bell synthesis
     const playChime = () => {
         try {
-            const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-            if (!AudioContext) return;
+            const AudioContextCtor = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+            if (!AudioContextCtor) return;
 
-            const ctx = new AudioContext();
+            const ctx = new AudioContextCtor();
 
             // Function to create a single "shake" of a bell cluster
             const playShake = (startTime: number) => {
@@ -49,7 +49,7 @@ export const useLiveCommentator = ({
                 // We use multiple oscillators with different high frequencies to simulate the pellets
                 const frequencies = [2000, 2450, 2900, 3200, 4100]; // Dissonant cluster high up
 
-                frequencies.forEach((freq, i) => {
+                frequencies.forEach((freq) => {
                     const osc = ctx.createOscillator();
                     const gain = ctx.createGain();
 

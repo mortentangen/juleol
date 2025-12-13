@@ -61,7 +61,7 @@ export default function SessionDetails() {
             if (beersError) throw beersError;
 
             // Transform data to match Beer interface
-            // @ts-ignore - Supabase types are a bit tricky with joins
+            // @ts-expect-error - Supabase types are a bit tricky with joins
             const formattedBeers = beersData.map((item) => ({
                 ...item.beers,
                 addedBy: item.profiles

@@ -42,7 +42,7 @@ export default function BeerCard({ beer, onRate, onDelete, index = 0, refreshTri
                 if (data) {
                     setUserRating(data);
                 }
-            } catch (error) {
+            } catch {
                 // No rating yet, that's fine
             } finally {
                 setLoading(false);

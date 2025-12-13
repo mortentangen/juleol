@@ -49,7 +49,7 @@ export default function RateBeerModal({
                     setOverall(data.overall || 0);
                     setComment(data.comment || '');
                 }
-            } catch (error) {
+            } catch {
                 // No existing rating, keep defaults at 0
             }
         };
