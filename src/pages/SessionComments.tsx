@@ -4,7 +4,7 @@ import { ArrowLeft, MessageSquare, Quote } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { motion } from 'framer-motion';
 import { getDisplayName } from '../utils/displayName';
-import type { RatingWithRelations } from '../services/leaderboardService';
+import type { RatingWithRelations } from '../types';
 
 interface BeerComments {
     beerId: string;

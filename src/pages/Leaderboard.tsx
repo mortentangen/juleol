@@ -4,12 +4,11 @@ import { getDisplayName } from '../utils/displayName';
 import { ArrowLeft, Trophy, TrendingUp, TrendingDown, Target, Star, Volume2, Radio, MessageSquare, Feather } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
-import { calculateLeaderboardStats, type BeerScore, type VoterStats, type FunStats, type RatingWithRelations } from '../services/leaderboardService';
+import { calculateLeaderboardStats } from '../services/leaderboardService';
+import type { BeerScore, VoterStats, FunStats, RatingWithRelations, FilterCriteria } from '../types';
 import TalkingSanta from '../components/TalkingSanta';
 import { useLiveCommentator } from '../hooks/useLiveCommentator';
 import ApiKeyModal from '../components/ApiKeyModal';
-
-type FilterCriteria = 'all' | 'taste' | 'mouthfeel' | 'overall';
 
 interface FunFactCardProps {
     title: string;
@@ -97,16 +96,12 @@ export default function Leaderboard() {
                     table: 'ratings',
                     filter: `session_id=eq.${id}`,
                 },
-                (payload) => {
-                    console.log('Real-time update received:', payload);
+                () => {
                     fetchLeaderboardData();
                 }
             )
             .subscribe((status) => {
-                console.log('Subscription status:', status);
-                if (status === 'SUBSCRIBED') {
-                    console.log('Successfully subscribed to leaderboard updates');
-                } else if (status === 'CHANNEL_ERROR') {
+                if (status === 'CHANNEL_ERROR') {
                     console.error('Error subscribing to leaderboard updates');
                 }
             });

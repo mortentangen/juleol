@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { X, Plus, Loader2, Link as LinkIcon, Search, Beer as BeerIcon } from 'lucide-react';
+import { useState } from 'react';
+import { X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
-import { importFromVinmonopolet } from '../lib/vinmonopolet';
 import { useAuth } from '../context/AuthContext';
-import type { Beer } from '../types';
+import ManualBeerForm from './add-beer/ManualBeerForm';
+import VinmonopoletSearch from './add-beer/VinmonopoletSearch';
+import ExistingBeerSearch from './add-beer/ExistingBeerSearch';
 
 interface AddBeerModalProps {
     isOpen: boolean;
@@ -13,134 +14,29 @@ interface AddBeerModalProps {
     onBeerAdded?: () => void;
 }
 
+export interface BeerFormData {
+    name: string;
+    brewery: string;
+    style: string;
+    abv: string;
+    description: string;
+    imageUrl: string;
+}
+
+const INITIAL_FORM_DATA: BeerFormData = {
+    name: '',
+    brewery: '',
+    style: '',
+    abv: '',
+    description: '',
+    imageUrl: ''
+};
+
 export default function AddBeerModal({ isOpen, onClose, sessionId, onBeerAdded }: AddBeerModalProps) {
     const { user } = useAuth();
     const [activeTab, setActiveTab] = useState<'manual' | 'url' | 'existing'>('manual');
     const [loading, setLoading] = useState(false);
-
-    // Manual Entry State
-    const [name, setName] = useState('');
-    const [brewery, setBrewery] = useState('');
-    const [style, setStyle] = useState('');
-    const [abv, setAbv] = useState('');
-    const [description, setDescription] = useState('');
-    const [imageUrl, setImageUrl] = useState('');
-
-    // URL Import State
-    const [importUrl, setImportUrl] = useState('');
-    const [importing, setImporting] = useState(false);
-
-    // Existing Beers State
-    const [existingBeers, setExistingBeers] = useState<Beer[]>([]);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [searching, setSearching] = useState(false);
-    const [addedBeerIds, setAddedBeerIds] = useState<Set<string>>(new Set());
-
-    useEffect(() => {
-        if (activeTab === 'existing' && isOpen) {
-            fetchExistingBeers();
-            fetchSessionBeerIds();
-        }
-    }, [activeTab, isOpen]);
-
-    const fetchSessionBeerIds = async () => {
-        const { data } = await supabase
-            .from('session_beers')
-            .select('beer_id')
-            .eq('session_id', sessionId);
-
-        if (data) {
-            setAddedBeerIds(new Set(data.map(item => item.beer_id)));
-        }
-    }
-
-    const fetchExistingBeers = async () => {
-        setSearching(true);
-        try {
-            let query = supabase
-                .from('beers')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(50);
-
-            if (searchQuery) {
-                query = query.ilike('name', `%${searchQuery}%`);
-            }
-
-            const { data, error } = await query;
-            if (error) throw error;
-            setExistingBeers(data || []);
-        } catch (error) {
-            console.error('Error fetching beers:', error);
-        } finally {
-            setSearching(false);
-        }
-    };
-
-    const handleAddExistingBeer = async (beerId: string) => {
-        if (addedBeerIds.has(beerId)) return;
-
-        setLoading(true);
-        try {
-            const { error } = await supabase
-                .from('session_beers')
-                .insert({
-                    session_id: sessionId,
-                    beer_id: beerId,
-                    added_by: user?.id,
-                });
-
-            if (error) throw error;
-
-            setAddedBeerIds(prev => new Set(prev).add(beerId));
-            onBeerAdded?.();
-            // Modal remains open
-        } catch (error) {
-            console.error('Error adding existing beer:', error);
-            alert('Kunne ikke legge til øl. Vennligst prøv igjen.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // Debounce search
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            if (activeTab === 'existing' && isOpen) {
-                fetchExistingBeers();
-            }
-        }, 300);
-        return () => clearTimeout(timer);
-    }, [searchQuery]);
-
-    const handleImportUrl = async () => {
-        if (!importUrl.trim()) return;
-
-        setImporting(true);
-        try {
-            const beer = await importFromVinmonopolet(importUrl);
-            if (beer) {
-                // Auto-fill the manual entry form
-                setName(beer.name);
-                setBrewery(beer.brewery);
-                setStyle(beer.style);
-                setAbv(beer.abv?.toString() || '');
-                setDescription(beer.description);
-                setImageUrl(beer.imageUrl);
-
-                // Switch to manual entry tab
-                setActiveTab('manual');
-                setImportUrl(''); // Clear the URL input
-            } else {
-                alert('Kunne ikke importere øl fra URL. Vennligst sjekk URLen og prøv igjen.');
-            }
-        } catch (error) {
-            console.error('Import error:', error);
-            alert('Import feilet. Prøv igjen eller bruk manuell registrering.');
-        } finally {
-            setImporting(false);
-        }
-    };
+    const [formData, setFormData] = useState<BeerFormData>(INITIAL_FORM_DATA);
 
     const handleManualSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -153,8 +49,8 @@ export default function AddBeerModal({ isOpen, onClose, sessionId, onBeerAdded }
             const { data: existingBeer, error: searchError } = await supabase
                 .from('beers')
                 .select('id')
-                .ilike('name', name.trim())
-                .ilike('brewery', brewery.trim())
+                .ilike('name', formData.name.trim())
+                .ilike('brewery', formData.brewery.trim())
                 .maybeSingle();
 
             if (searchError) throw searchError;
@@ -162,18 +58,17 @@ export default function AddBeerModal({ isOpen, onClose, sessionId, onBeerAdded }
             if (existingBeer) {
                 // Reuse existing beer
                 beerId = existingBeer.id;
-                console.log('Reusing existing beer:', beerId);
             } else {
                 // Insert new beer
                 const { data: beerData, error: beerError } = await supabase
                     .from('beers')
                     .insert({
-                        name: name.trim(),
-                        brewery: brewery.trim(),
-                        style,
-                        abv: parseFloat(abv),
-                        description,
-                        image_url: imageUrl,
+                        name: formData.name.trim(),
+                        brewery: formData.brewery.trim(),
+                        style: formData.style,
+                        abv: parseFloat(formData.abv),
+                        description: formData.description,
+                        image_url: formData.imageUrl,
                     })
                     .select()
                     .single();
@@ -209,13 +104,7 @@ export default function AddBeerModal({ isOpen, onClose, sessionId, onBeerAdded }
 
             onBeerAdded?.();
             onClose();
-            // Reset form
-            setName('');
-            setBrewery('');
-            setStyle('');
-            setAbv('');
-            setDescription('');
-            setImageUrl('');
+            setFormData(INITIAL_FORM_DATA);
         } catch (error) {
             console.error('Error adding beer:', error);
             alert('Kunne ikke legge til øl. Vennligst prøv igjen.');
@@ -282,200 +171,25 @@ export default function AddBeerModal({ isOpen, onClose, sessionId, onBeerAdded }
 
                         <div className="p-6 overflow-y-auto">
                             {activeTab === 'manual' ? (
-                                <form onSubmit={handleManualSubmit} className="space-y-4">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-300 mb-1">Ølnavn</label>
-                                            <input
-                                                type="text"
-                                                required
-                                                value={name}
-                                                onChange={(e) => setName(e.target.value)}
-                                                className="w-full bg-slate-800/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder-slate-500"
-                                                placeholder="f.eks. Tuborg Julebryg"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-300 mb-1">Bryggeri</label>
-                                            <input
-                                                type="text"
-                                                required
-                                                value={brewery}
-                                                onChange={(e) => setBrewery(e.target.value)}
-                                                className="w-full bg-slate-800/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder-slate-500"
-                                                placeholder="f.eks. Tuborg"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-300 mb-1">Stil</label>
-                                            <input
-                                                type="text"
-                                                value={style}
-                                                onChange={(e) => setStyle(e.target.value)}
-                                                className="w-full bg-slate-800/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder-slate-500"
-                                                placeholder="f.eks. Pilsner"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-300 mb-1">ABV (%)</label>
-                                            <input
-                                                type="number"
-                                                step="0.1"
-                                                value={abv}
-                                                onChange={(e) => setAbv(e.target.value)}
-                                                className="w-full bg-slate-800/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder-slate-500"
-                                                placeholder="f.eks. 5.6"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-300 mb-1">Beskrivelse</label>
-                                        <textarea
-                                            value={description}
-                                            onChange={(e) => setDescription(e.target.value)}
-                                            className="w-full bg-slate-800/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder-slate-500 h-24"
-                                            placeholder="Smaksnotater..."
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-300 mb-1">Bilde URL (Valgfritt)</label>
-                                        <input
-                                            type="url"
-                                            value={imageUrl}
-                                            onChange={(e) => setImageUrl(e.target.value)}
-                                            className="w-full bg-slate-800/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder-slate-500"
-                                            placeholder="https://..."
-                                        />
-                                    </div>
-
-                                    <div className="pt-4 flex justify-end space-x-3">
-                                        <button
-                                            type="button"
-                                            onClick={onClose}
-                                            className="px-4 py-2 text-slate-300 hover:text-white transition-colors font-medium"
-                                        >
-                                            Avbryt
-                                        </button>
-                                        <button
-                                            type="submit"
-                                            disabled={loading}
-                                            className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white rounded-lg font-medium shadow-lg shadow-amber-500/20 transition-all disabled:opacity-50 flex items-center"
-                                        >
-                                            {loading ? (
-                                                'Legger til...'
-                                            ) : (
-                                                <>
-                                                    <Plus className="w-5 h-5 mr-2" />
-                                                    Legg til øl
-                                                </>
-                                            )}
-                                        </button>
-                                    </div>
-                                </form>
+                                <ManualBeerForm
+                                    formData={formData}
+                                    onChange={setFormData}
+                                    onSubmit={handleManualSubmit}
+                                    loading={loading}
+                                    onCancel={onClose}
+                                />
                             ) : activeTab === 'existing' ? (
-                                <div className="space-y-4">
-                                    <div className="relative">
-                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
-                                        <input
-                                            type="text"
-                                            value={searchQuery}
-                                            onChange={(e) => setSearchQuery(e.target.value)}
-                                            placeholder="Søk i eksisterende øl..."
-                                            className="w-full bg-slate-800/50 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder-slate-500"
-                                        />
-                                    </div>
-
-                                    <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar">
-                                        {searching ? (
-                                            <div className="text-center py-8 text-slate-400">
-                                                <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
-                                                Leter etter øl...
-                                            </div>
-                                        ) : existingBeers.filter(beer => !addedBeerIds.has(beer.id)).length === 0 ? (
-                                            <div className="text-center py-8 text-slate-400">
-                                                {existingBeers.length === 0 ? "Ingen øl funnet." : "Alle disse ølene er allerede lagt til."}
-                                            </div>
-                                        ) : (
-                                            existingBeers
-                                                .filter(beer => !addedBeerIds.has(beer.id))
-                                                .map((beer) => (
-                                                    <div
-                                                        key={beer.id}
-                                                        onClick={() => handleAddExistingBeer(beer.id)}
-                                                        className="flex items-center p-3 bg-slate-800/30 hover:bg-amber-500/10 border border-white/5 hover:border-amber-500/30 rounded-lg cursor-pointer transition-all group"
-                                                    >
-                                                        <div className="w-10 h-10 bg-slate-700/50 rounded flex items-center justify-center mr-3 flex-shrink-0">
-                                                            {beer.image_url ? (
-                                                                <img src={beer.image_url} alt={beer.name} className="w-full h-full object-cover rounded" />
-                                                            ) : (
-                                                                <BeerIcon className="w-5 h-5 text-slate-500" />
-                                                            )}
-                                                        </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <h4 className="text-white font-medium truncate group-hover:text-amber-400 transition-colors">
-                                                                {beer.name}
-                                                            </h4>
-                                                            <p className="text-sm text-slate-400 truncate">{beer.brewery}</p>
-                                                        </div>
-                                                        <button className="p-2 text-slate-400 group-hover:text-amber-500 transition-colors">
-                                                            <Plus className="w-5 h-5" />
-                                                        </button>
-                                                    </div>
-                                                ))
-                                        )}
-                                    </div>
-                                </div>
+                                <ExistingBeerSearch
+                                    sessionId={sessionId}
+                                    onBeerAdded={onBeerAdded || (() => { })}
+                                />
                             ) : (
-                                <div className="space-y-4">
-                                    <div className="text-center py-4">
-                                        <LinkIcon className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-                                        <h3 className="text-lg font-medium text-white mb-2">Importer fra Vinmonopolet</h3>
-                                        <p className="text-slate-300 text-sm mb-4">Lim inn en Vinmonopolet produkt-URL for å fylle ut detaljer automatisk</p>
-                                    </div>
-
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="url"
-                                            value={importUrl}
-                                            onChange={(e) => setImportUrl(e.target.value)}
-                                            onKeyDown={(e) => e.key === 'Enter' && handleImportUrl()}
-                                            placeholder="https://www.vinmonopolet.no/.../p/12345678"
-                                            className="flex-1 bg-slate-800/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder-slate-500"
-                                        />
-                                        <button
-                                            onClick={handleImportUrl}
-                                            disabled={importing || !importUrl.trim()}
-                                            className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white rounded-lg font-medium shadow-lg shadow-amber-500/20 transition-all disabled:opacity-50 flex items-center"
-                                        >
-                                            {importing ? (
-                                                <>
-                                                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                                                    Importerer...
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Plus className="w-5 h-5 mr-2" />
-                                                    Importer
-                                                </>
-                                            )}
-                                        </button>
-                                    </div>
-
-                                    <div className="bg-slate-800/30 border border-white/10 rounded-lg p-4">
-                                        <h4 className="text-sm font-medium text-white mb-2">Hvordan bruke:</h4>
-                                        <ol className="text-sm text-slate-300 space-y-1 list-decimal list-inside">
-                                            <li>Gå til <a href="https://www.vinmonopolet.no" target="_blank" rel="noopener noreferrer" className="text-amber-500 hover:text-amber-400">vinmonopolet.no</a></li>
-                                            <li>Finn ølen du vil legge til</li>
-                                            <li>Kopier URLen fra nettleseren</li>
-                                            <li>Lim den inn over og trykk Importer</li>
-                                        </ol>
-                                    </div>
-                                </div>
+                                <VinmonopoletSearch
+                                    onBeerFound={(beer) => {
+                                        setFormData(beer);
+                                        setActiveTab('manual');
+                                    }}
+                                />
                             )}
                         </div>
                     </motion.div>

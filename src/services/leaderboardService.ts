@@ -1,57 +1,15 @@
+import { FUN_FACT_THRESHOLDS } from '../constants';
 import { getDisplayName } from '../utils/displayName';
-import type { Beer, Rating } from '../types';
+import type {
+    BeerScore,
+    FunStats,
+    LeaderboardData,
+    RatingWithRelations,
+    FilterCriteria
+} from '../types';
 
-export interface BeerScore {
-    beer: Beer;
-    avgScore: number;
-    avgTaste: number;
-    avgMouthfeel: number;
-    avgOverall: number;
-    ratingCount: number;
-    ratings: RatingWithRelations[];
-}
+export function calculateLeaderboardStats(ratings: RatingWithRelations[], filterCriteria: FilterCriteria): LeaderboardData {
 
-export interface VoterStats {
-    userId: string;
-    name: string;
-    avgRating: number;
-    ratingCount: number;
-    avgTaste: number;
-    avgMouthfeel: number;
-    comments: number;
-    perfectScores: number;
-    lowestScore?: { beerName: string; score: number };
-    stdDev: number;
-    totalDeviations: number;
-}
-
-export interface FunStats {
-    tasteMaster?: { name: string; score: number };
-    mouthfeelMaster?: { name: string; score: number };
-    hater?: { name: string; beerName: string; score: number };
-    lover?: { name: string; count: number };
-    chatterbox?: { name: string; count: number };
-    maverick?: { name: string; deviation: number };
-    hipster?: { name: string; score: number };
-    mestBog?: { name: string; consistency: number };
-}
-
-export interface LeaderboardData {
-    beerScores: BeerScore[];
-    voterStats: VoterStats[];
-    funStats: FunStats;
-}
-
-// Define types for joined data
-export interface RatingWithRelations extends Rating {
-    beers: Beer;
-    profiles: {
-        full_name: string | null;
-        email: string | null;
-    } | null;
-}
-
-export function calculateLeaderboardStats(ratings: RatingWithRelations[], filterCriteria: 'all' | 'taste' | 'mouthfeel' | 'overall'): LeaderboardData {
     const beerMap = new Map<string, BeerScore>();
     // Extended voter map to track all ratings for variance/stats
     const voterMap = new Map<string, {
@@ -135,7 +93,7 @@ export function calculateLeaderboardStats(ratings: RatingWithRelations[], filter
         }
 
         // Check for lowest score (Hater) - defined as <= 3 total stars (avg 1 per criteria)
-        if (ratingTotalStars <= 3) {
+        if (ratingTotalStars <= FUN_FACT_THRESHOLDS.LOW_SCORE_HATER) {
             voter.lowScores.push({
                 beerName: rating.beers.name || 'Øl',
                 score: ratingTotalStars
@@ -143,7 +101,7 @@ export function calculateLeaderboardStats(ratings: RatingWithRelations[], filter
         }
 
         // Check for perfect score (Lover)
-        if (ratingTotalStars === 15) {
+        if (ratingTotalStars === FUN_FACT_THRESHOLDS.PERFECT_SCORE) {
             voter.perfectScores++;
         }
 
@@ -224,7 +182,7 @@ export function calculateLeaderboardStats(ratings: RatingWithRelations[], filter
 
     // 6. Maverick / Berg-og-dal-bane (Highest Standard Deviation)
     // Filter out people with few votes to avoid skewing
-    const qualifiedStats = stats.filter(s => s.ratingCount >= 2);
+    const qualifiedStats = stats.filter(s => s.ratingCount >= FUN_FACT_THRESHOLDS.MIN_VOTES_FOR_MAVERICK);
     const maverick = [...qualifiedStats].sort((a, b) => b.stdDev - a.stdDev)[0];
     if (maverick && maverick.stdDev > 0) newFunStats.maverick = { name: maverick.name, deviation: maverick.stdDev };
 

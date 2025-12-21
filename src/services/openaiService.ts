@@ -1,4 +1,5 @@
-import type { BeerScore } from './leaderboardService';
+import { SCORING, AI_SENTIMENT_THRESHOLDS, ROAST_THRESHOLDS } from '../constants';
+import type { BeerScore } from '../types';
 
 /**
  * Generates beer commentary audio directly (text + audio in one call).
@@ -66,7 +67,7 @@ export const generateBeerCommentaryAudio = async (
         : null;
 
     const sentiment =
-        avgScore >= 12 ? "svært godt" : avgScore <= 6 ? "svært dårlig" : avgScore >= 9 ? "helt greit" : "midt på treet";
+        avgScore >= AI_SENTIMENT_THRESHOLDS.EXCELLENT ? "svært godt" : avgScore <= AI_SENTIMENT_THRESHOLDS.POOR ? "svært dårlig" : avgScore >= AI_SENTIMENT_THRESHOLDS.GOOD ? "helt greit" : "midt på treet";
 
     // --- History (keep short; it’s just fuel for jokes) ---
     const previousBeers = allBeerScores
@@ -77,7 +78,7 @@ export const generateBeerCommentaryAudio = async (
             const score = Number(b?.avgScore ?? 0);
             // Avoid too many decimals; decimals can sound weird in TTS.
             const rounded = Math.round(score * 10) / 10;
-            return `${name} (${rounded} av 15)`;
+            return `${name} (${rounded} av ${SCORING.MAX_SCORE})`;
         })
         .join(", ");
 
@@ -88,13 +89,13 @@ export const generateBeerCommentaryAudio = async (
     // - High spread -> roast the group / disagreement.
     // - Otherwise roast the beer unless there is a clear “character” comment.
     let roastTarget: "beer" | "topRater" | "bottomRater" | "group" = "beer";
-    if (spread >= 6 && ratingCount >= 3) {
+    if (spread >= ROAST_THRESHOLDS.SPREAD_HIGH && ratingCount >= ROAST_THRESHOLDS.MIN_RATING_COUNT_FOR_GROUP_ROAST) {
         roastTarget = "group";
-    } else if (avgScore >= 12 && topRater) {
+    } else if (avgScore >= AI_SENTIMENT_THRESHOLDS.EXCELLENT && topRater) {
         roastTarget = "topRater";
-    } else if (avgScore <= 6) {
+    } else if (avgScore <= AI_SENTIMENT_THRESHOLDS.POOR) {
         roastTarget = "beer";
-    } else if (bottomRater && avgScore >= 9) {
+    } else if (bottomRater && avgScore >= AI_SENTIMENT_THRESHOLDS.GOOD) {
         // If it's decent but someone tanks it, poke the critic a bit.
         roastTarget = "bottomRater";
     }
