@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, type RefObject } from 'react';
 import { generateBeerCommentaryAudio } from '../services/openaiService';
-import type { BeerScore, VoterStats } from '../services/leaderboardService';
+import type { BeerScore, VoterStats } from '../types';
 
 interface UseLiveCommentatorProps {
     beerScores: BeerScore[];
@@ -101,7 +101,6 @@ export const useLiveCommentator = ({
             ) {
                 // Lock process
                 isProcessingRef.current = true;
-                console.log(`Live Commentator: Beer "${score.beer.name}" is complete! Generating commentary...`);
 
                 // Mark as handled immediately to prevent double-trigger
                 commentedBeersRef.current.add(score.beer.id);
@@ -112,7 +111,6 @@ export const useLiveCommentator = ({
                 try {
                     const apiKey = localStorage.getItem('openai_api_key');
                     if (!apiKey) {
-                        console.warn("Live Commentator: No API key found.");
                         isProcessingRef.current = false;
                         return;
                     }
