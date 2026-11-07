@@ -18,9 +18,9 @@ export interface Beer {
     image_url?: string;
     addedBy?: {
         full_name: string | null;
-        email: string | null;
         avatar_url?: string | null;
     };
+    addedByUserId?: string;
 }
 
 export interface Rating {
@@ -82,7 +82,6 @@ export interface RatingWithRelations extends Rating {
     beers: Beer;
     profiles: {
         full_name: string | null;
-        email: string | null;
     } | null;
 }
 

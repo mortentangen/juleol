@@ -303,10 +303,10 @@ export default function Leaderboard() {
                                                 <div
                                                     key={rating.id}
                                                     className="flex items-center gap-1.5 bg-slate-800/30 rounded px-2 py-1"
-                                                    title={`${getDisplayName(rating.profiles?.full_name, rating.profiles?.email)}: ${totalStars}/${maxStars} stars`}
+                                                    title={`${getDisplayName(rating.profiles?.full_name, undefined)}: ${totalStars}/${maxStars} stars`}
                                                 >
                                                     <span className="text-white text-xs font-medium truncate max-w-[80px]">
-                                                        {getDisplayName(rating.profiles?.full_name, rating.profiles?.email)}
+                                                        {getDisplayName(rating.profiles?.full_name, undefined)}
                                                     </span>
                                                     <div className="flex items-center gap-0.5">
                                                         {Array.from({ length: 5 }, (_, i) => {
@@ -358,7 +358,7 @@ export default function Leaderboard() {
                                                                     <div key={rating.id} className="bg-black/20 rounded p-3 text-sm">
                                                                         <div className="flex items-center justify-between mb-1">
                                                                             <span className="font-bold text-amber-500 text-xs">
-                                                                                {getDisplayName(rating.profiles?.full_name, rating.profiles?.email)}
+                                                                                {getDisplayName(rating.profiles?.full_name, undefined)}
                                                                             </span>
                                                                             <span className="text-slate-500 text-[10px]">
                                                                                 {rating.taste + rating.mouthfeel + rating.overall}p

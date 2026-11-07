@@ -10,16 +10,11 @@ export const generateBeerCommentaryAudio = async (
     beerScore: BeerScore,
     allBeerScores: BeerScore[] = []
 ): Promise<ArrayBuffer> => {
-    const getName = (profile: { full_name: string | null; email: string | null } | null): string => {
+    const getName = (profile: { full_name: string | null } | null): string => {
         if (!profile) return "Anonym";
 
         if (profile.full_name && profile.full_name.trim().length > 0) {
             return profile.full_name.trim().split(" ")[0]!;
-        }
-        if (profile.email && profile.email.includes("@")) {
-            const localPart = profile.email.split("@")[0] ?? "anonym";
-            const firstName = (localPart.split(".")[0] ?? "anonym").trim();
-            return firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
         }
         return "Anonym";
     };

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, Users, Plus, Trophy, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Calendar, Users, Plus, Trophy, ListOrdered } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import type { Session, Beer } from '../types';
@@ -8,6 +8,7 @@ import BeerCard from '../components/BeerCard';
 import AddBeerModal from '../components/AddBeerModal';
 import RateBeerModal from '../components/RateBeerModal';
 import ConfirmDialog from '../components/ConfirmDialog';
+import ReorderModal from '../components/ReorderModal';
 import { motion } from 'framer-motion';
 
 export default function SessionDetails() {
@@ -28,6 +29,8 @@ export default function SessionDetails() {
     // Delete Confirmation State
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [beerToDelete, setBeerToDelete] = useState<string | null>(null);
+    const [selectedContributorId, setSelectedContributorId] = useState<string | null>(null);
+    const [isReorderModalOpen, setIsReorderModalOpen] = useState(false);
 
     const fetchSessionData = async () => {
         if (!id) return;
@@ -64,8 +67,9 @@ export default function SessionDetails() {
             // @ts-expect-error - Supabase types are a bit tricky with joins
             const formattedBeers = beersData.map((item) => ({
                 ...item.beers,
-                addedBy: item.profiles
-            })) as Beer[];
+                addedBy: item.profiles,
+                addedByUserId: item.added_by
+            })) as (Beer & { addedByUserId: string })[];
             setBeers(formattedBeers);
 
         } catch (error) {
@@ -142,19 +146,19 @@ export default function SessionDetails() {
                     </Link>
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
-                            <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">{session.name}</h1>
-                            <div className="flex items-center space-x-6 text-slate-300">
+                            <h1 className="text-2xl font-bold text-white mb-1 tracking-tight">{session.name}</h1>
+                            <div className="flex items-center space-x-4 text-xs text-slate-400">
                                 <div className="flex items-center">
-                                    <Calendar className="w-5 h-5 mr-2 text-amber-500/70" />
+                                    <Calendar className="w-4 h-4 mr-1.5 text-amber-500/70" />
                                     {new Date(session.date).toLocaleDateString()}
                                 </div>
                                 <div className="flex items-center">
-                                    <Users className="w-5 h-5 mr-2 text-amber-500/70" />
-                                    Kode: <span className="font-mono ml-2 text-amber-500 bg-amber-500/10 px-2 py-1 rounded">{session.join_code}</span>
+                                    <Users className="w-4 h-4 mr-1.5 text-amber-500/70" />
+                                    Kode: <span className="font-mono ml-1.5 text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded">{session.join_code}</span>
                                 </div>
                             </div>
                         </div>
-                        <div className="flex space-x-3">
+                        <div className="flex flex-wrap gap-2 sm:gap-3">
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
@@ -164,14 +168,15 @@ export default function SessionDetails() {
                                 <Trophy className="w-5 h-5 mr-2 text-yellow-500" />
                                 Resultatliste
                             </motion.button>
+
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                onClick={() => navigate(`/session/${id}/comments`)}
+                                onClick={() => setIsReorderModalOpen(true)}
                                 className="flex items-center px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-medium transition-colors border border-white/10 shadow-lg"
                             >
-                                <MessageSquare className="w-5 h-5 mr-2 text-blue-400" />
-                                Kommentarer
+                                <ListOrdered className="w-5 h-5 mr-2 text-amber-500" />
+                                Rekkefølge
                             </motion.button>
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
@@ -184,43 +189,112 @@ export default function SessionDetails() {
                             </motion.button>
                         </div>
                     </div>
+
+                    {/* Contributor Filters */}
+                    <div className="mt-4 flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+                        <button
+                            onClick={() => setSelectedContributorId(null)}
+                            className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${selectedContributorId === null
+                                ? 'bg-amber-500 border-amber-500 text-slate-900 shadow-lg shadow-amber-500/20'
+                                : 'bg-slate-900/50 border-white/10 text-slate-400 hover:text-white'
+                                }`}
+                        >
+                            Alle øl
+                        </button>
+
+                        <button
+                            onClick={() => setSelectedContributorId(user?.id || null)}
+                            className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${selectedContributorId === user?.id
+                                ? 'bg-amber-500 border-amber-500 text-slate-900 shadow-lg shadow-amber-500/20'
+                                : 'bg-slate-900/50 border-white/10 text-slate-400 hover:text-white'
+                                }`}
+                        >
+                            Mine øl
+                        </button>
+
+                        <div className="w-px h-4 bg-white/10 mx-1 flex-shrink-0" />
+
+                        {(() => {
+                            const contributors = Array.from(new Map(
+                                beers
+                                    .filter((b): b is typeof b & { addedByUserId: string } =>
+                                        !!b.addedByUserId && b.addedByUserId !== user?.id
+                                    )
+                                    .map(b => [b.addedByUserId, b.addedBy?.full_name || 'Anonym'])
+                            ).entries());
+
+                            return contributors.map(([id, name]) => (
+                                <button
+                                    key={id}
+                                    onClick={() => setSelectedContributorId(id === selectedContributorId ? null : id)}
+                                    className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${selectedContributorId === id
+                                        ? 'bg-amber-500 border-amber-500 text-slate-900 shadow-lg shadow-amber-500/20'
+                                        : 'bg-slate-900/50 border-white/10 text-slate-400 hover:text-white'
+                                        }`}
+                                >
+                                    {name.split(' ')[0]}
+                                </button>
+                            ));
+                        })()}
+                    </div>
                 </div>
             </header>
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {beers.length === 0 ? (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-center py-16 glass rounded-2xl border-dashed border-2 border-slate-700"
-                    >
-                        <div className="bg-slate-800/50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <Plus className="w-10 h-10 text-slate-500" />
+                {(() => {
+                    const filteredBeers = beers.filter(beer => {
+                        if (selectedContributorId) {
+                            return beer.addedByUserId === selectedContributorId;
+                        }
+                        return true;
+                    });
+
+                    if (beers.length === 0) {
+                        return (
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="text-center py-16 glass rounded-2xl border-dashed border-2 border-slate-700"
+                            >
+                                <div className="bg-slate-800/50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <Plus className="w-10 h-10 text-slate-500" />
+                                </div>
+                                <h3 className="text-xl font-bold text-white mb-2">Ingen øl lagt til ennå</h3>
+                                <p className="text-slate-300 mb-8">Legg til noen øl for å starte smakingen!</p>
+                                <button
+                                    onClick={() => setIsAddBeerModalOpen(true)}
+                                    className="inline-flex items-center px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl transition-colors font-medium border border-white/10"
+                                >
+                                    <Plus className="w-5 h-5 mr-2" />
+                                    Legg til øl
+                                </button>
+                            </motion.div>
+                        );
+                    }
+
+                    if (filteredBeers.length === 0) {
+                        return (
+                            <div className="text-center py-16">
+                                <p className="text-slate-400 italic">Ingen øl matcher søket ditt.</p>
+                            </div>
+                        );
+                    }
+
+                    return (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {filteredBeers.map((beer, index) => (
+                                <BeerCard
+                                    key={beer.id}
+                                    beer={beer}
+                                    index={index}
+                                    refreshTrigger={ratingUpdateTrigger}
+                                    onRate={() => handleRateClick(beer)}
+                                    onDelete={isHost ? () => handleDeleteBeer(beer.id) : undefined}
+                                />
+                            ))}
                         </div>
-                        <h3 className="text-xl font-bold text-white mb-2">Ingen øl lagt til ennå</h3>
-                        <p className="text-slate-300 mb-8">Legg til noen øl for å starte smakingen!</p>
-                        <button
-                            onClick={() => setIsAddBeerModalOpen(true)}
-                            className="inline-flex items-center px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl transition-colors font-medium border border-white/10"
-                        >
-                            <Plus className="w-5 h-5 mr-2" />
-                            Legg til øl
-                        </button>
-                    </motion.div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {beers.map((beer, index) => (
-                            <BeerCard
-                                key={beer.id}
-                                beer={beer}
-                                index={index}
-                                refreshTrigger={ratingUpdateTrigger}
-                                onRate={() => handleRateClick(beer)}
-                                onDelete={isHost ? () => handleDeleteBeer(beer.id) : undefined}
-                            />
-                        ))}
-                    </div>
-                )}
+                    );
+                })()}
             </main>
 
             <AddBeerModal
@@ -251,6 +325,15 @@ export default function SessionDetails() {
                 confirmText="Slett"
                 cancelText="Avbryt"
                 variant="danger"
+            />
+
+            <ReorderModal
+                isOpen={isReorderModalOpen}
+                onClose={() => setIsReorderModalOpen(false)}
+                sessionId={session.id}
+                beers={beers}
+                isHost={isHost}
+                onReordered={fetchSessionData}
             />
         </div>
     );

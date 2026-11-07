@@ -63,6 +63,10 @@ export default function BeerCard({ beer, onRate, onDelete, index = 0, refreshTri
             <div className="flex gap-3 p-3">
                 {/* Image on the left */}
                 <div className="w-20 sm:w-24 h-28 sm:h-32 flex-shrink-0 bg-slate-800/30 rounded-lg p-2 relative flex items-center justify-center">
+                    {/* Index Badge */}
+                    <div className="absolute -top-2 -left-2 w-7 h-7 bg-amber-500 text-slate-900 rounded-full flex items-center justify-center text-xs font-bold shadow-lg z-10">
+                        #{index + 1}
+                    </div>
                     {beer.image_url ? (
                         <img
                             src={beer.image_url}

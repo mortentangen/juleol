@@ -70,7 +70,7 @@ export function calculateLeaderboardStats(ratings: RatingWithRelations[], filter
             voterMap.set(userId, {
                 total: 0,
                 count: 0,
-                name: getDisplayName(rating.profiles?.full_name, rating.profiles?.email),
+                name: getDisplayName(rating.profiles?.full_name, undefined),
                 ratings: [],
                 tasteScores: [],
                 mouthfeelScores: [],
