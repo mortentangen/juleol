@@ -34,7 +34,7 @@ export default function ApiKeyModal({ isOpen, onClose, onSave }: ApiKeyModalProp
                                 <div className="p-2 bg-amber-500/20 rounded-lg">
                                     <Key className="w-5 h-5 text-amber-500" />
                                 </div>
-                                <h2 className="text-lg font-bold text-white">OpenAI API Nøkkel</h2>
+                                <h2 className="text-lg font-bold text-white">OpenAI API-nøkkel</h2>
                             </div>
                             <button
                                 onClick={onClose}
@@ -46,13 +46,13 @@ export default function ApiKeyModal({ isOpen, onClose, onSave }: ApiKeyModalProp
 
                         <div className="p-6 space-y-4">
                             <p className="text-slate-300 text-sm">
-                                For å bruke AI-kommentatoren må du legge inn en gyldig OpenAI API-nøkkel fra dere.
+                                For å bruke AI-kommentatoren må du legge inn en gyldig OpenAI API-nøkkel.
                                 Nøkkelen lagres kun lokalt i nettleseren din.
                             </p>
 
                             <div className="space-y-2">
                                 <label htmlFor="apiKey" className="block text-xs font-medium text-slate-400 uppercase tracking-wider">
-                                    API Nøkkel (start med sk-...)
+                                    API-nøkkel (starter med sk-...)
                                 </label>
                                 <input
                                     id="apiKey"

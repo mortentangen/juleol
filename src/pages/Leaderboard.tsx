@@ -397,14 +397,14 @@ export default function Leaderboard() {
                             isLoading={playingFunFact === "Smaksdommeren"}
                         />}
                         {funStats.mouthfeelMaster && <FunFactCard
-                            title="Munnfølelse-entusiast"
+                            title="Munnfølelsesentusiast"
                             icon={Target}
                             color="text-blue-400"
                             name={funStats.mouthfeelMaster.name}
                             value={`Snitt munn.: ${funStats.mouthfeelMaster.score.toFixed(1)}`}
                             delay={0.2}
-                            onClick={() => handleFunFactClick("Munnfølelse-entusiast", funStats.mouthfeelMaster!.name, `Elsker munnfølelse (${funStats.mouthfeelMaster!.score.toFixed(1)})`)}
-                            isLoading={playingFunFact === "Munnfølelse-entusiast"}
+                            onClick={() => handleFunFactClick("Munnfølelsesentusiast", funStats.mouthfeelMaster!.name, `Elsker munnfølelse (${funStats.mouthfeelMaster!.score.toFixed(1)})`)}
+                            isLoading={playingFunFact === "Munnfølelsesentusiast"}
                         />}
 
                         {funStats.hater && <FunFactCard title="Hilsen fra Helvete" icon={TrendingDown} color="text-red-600" name={funStats.hater.name} value={`${funStats.hater.score}p til ${funStats.hater.beerName}`} delay={0.3} />}

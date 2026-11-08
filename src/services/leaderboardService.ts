@@ -157,7 +157,7 @@ export function calculateLeaderboardStats(ratings: RatingWithRelations[], filter
     const tasteMaster = [...stats].sort((a, b) => b.avgTaste - a.avgTaste)[0];
     if (tasteMaster) newFunStats.tasteMaster = { name: tasteMaster.name, score: tasteMaster.avgTaste };
 
-    // 2. Munnfølelse-entusiasten
+    // 2. Munnfølelsesentusiasten
     const mouthfeelMaster = [...stats].sort((a, b) => b.avgMouthfeel - a.avgMouthfeel)[0];
     if (mouthfeelMaster) newFunStats.mouthfeelMaster = { name: mouthfeelMaster.name, score: mouthfeelMaster.avgMouthfeel };
 

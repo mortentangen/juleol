@@ -125,7 +125,7 @@ export const generateBeerCommentaryAudio = async (
     // Important: we keep max_tokens high to avoid audio truncation, but we force short output via contract.
     const systemPrompt = [
         "Du snakker tydelig norsk bokmål. Unngå engelske ord og uttrykk.",
-        "Du er en spydig og litt brisen juleøls-kommentator med tørr humor.",
+        "Du er en spydig og litt brisen juleølskommentator med tørr humor.",
         "Bruk konkrete smaksbilder, julebordshumor og korte, vennlige stikk.",
         "Vær kvikk og treffende, og la vitsene handle om ølet eller vurderingene.",
         "",
@@ -214,7 +214,7 @@ export const generateFunFactCommentaryAudio = async (
 
     const systemPrompt = [
         "Du snakker tydelig norsk bokmål. Unngå engelske ord.",
-        "Du er en kvikk juleøls-kommentator med tørr humor.",
+        "Du er en kvikk juleølskommentator med tørr humor.",
         "Bruk ordspill om øl, smaking og jul.",
         "",
         "KONTRAKT:",
@@ -224,7 +224,7 @@ export const generateFunFactCommentaryAudio = async (
         "- Gjør det personlig og vennlig ertende mot vinneren.",
         "",
         "Eksempler:",
-        "Input: TITTEL: Munnfølelse-entusiast. VINNER: Lars.",
+        "Input: TITTEL: Munnfølelsesentusiast. VINNER: Lars.",
         "Output: Lars merker om ølet er silkemykt eller brusende. Han tar tekstur like alvorlig som smaken.",
         "",
         "Input: TITTEL: Jevneste dommer. VINNER: Per.",
