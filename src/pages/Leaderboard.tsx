@@ -407,7 +407,7 @@ export default function Leaderboard() {
                             isLoading={playingFunFact === "Munnfølelsesentusiast"}
                         />}
 
-                        {funStats.hater && <FunFactCard title="Hilsen fra Helvete" icon={TrendingDown} color="text-red-600" name={funStats.hater.name} value={`${funStats.hater.score}p til ${funStats.hater.beerName}`} delay={0.3} />}
+                        {funStats.hater && <FunFactCard title="Kveldens grinebiter" icon={TrendingDown} color="text-red-600" name={funStats.hater.name} value={`${funStats.hater.score}p til ${funStats.hater.beerName}`} delay={0.3} />}
                         {funStats.lover && <FunFactCard title="Halleluja-stemning" icon={TrendingUp} color="text-yellow-400" name={funStats.lover.name} value={`${funStats.lover.count} fullpottere!`} delay={0.4} />}
 
                         {funStats.maverick && <FunFactCard title="Berg-og-dal-bane" icon={TrendingUp} color="text-purple-400" name={funStats.maverick.name} value="Mest varierte karakterer" delay={0.5} />}
