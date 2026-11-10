@@ -56,12 +56,6 @@ export default function RateBeerModal({
 
         if (isOpen) {
             fetchExistingRating();
-        } else {
-            // Reset when modal closes
-            setTaste(0);
-            setMouthfeel(0);
-            setOverall(0);
-            setComment('');
         }
     }, [isOpen, beer.id, user, sessionId]);
 

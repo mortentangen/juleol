@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Plus, LogOut, Beer, Users } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -15,7 +15,7 @@ export default function Dashboard() {
     const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
     const [loading, setLoading] = useState(true);
 
-    const fetchSessions = async () => {
+    const fetchSessions = useCallback(async () => {
         if (!user) return;
         try {
             // Fetch sessions where user is host OR participant
@@ -35,11 +35,13 @@ export default function Dashboard() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [user]);
 
     useEffect(() => {
+        // State updates occur after the asynchronous request completes.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchSessions();
-    }, [user]);
+    }, [fetchSessions]);
 
     return (
         <div className="min-h-screen">

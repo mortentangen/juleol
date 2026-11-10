@@ -84,6 +84,8 @@ export default function Leaderboard() {
 
 
     useEffect(() => {
+        // State updates occur after the asynchronous request completes.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchLeaderboardData();
 
         const channel = supabase
@@ -120,7 +122,7 @@ export default function Leaderboard() {
             // Let's just play anyway but need API key
         }
 
-        let apiKey = localStorage.getItem('openai_api_key') || import.meta.env.VITE_OPENAI_API_KEY;
+        const apiKey = localStorage.getItem('openai_api_key') || import.meta.env.VITE_OPENAI_API_KEY;
 
         if (!apiKey) {
             setIsApiKeyModalOpen(true);
@@ -145,17 +147,18 @@ export default function Leaderboard() {
                     URL.revokeObjectURL(url);
                 };
             }
-        } catch (error: any) {
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Ukjent feil';
             console.error("Failed to play fun fact audio", error);
             setPlayingFunFact(null);
 
             // If unauthorized/invalid key, prompt to enter new one
-            if (error.message?.includes('401') || error.message?.toLowerCase().includes('api key')) {
+            if (message.includes('401') || message.toLowerCase().includes('api key')) {
                 alert("API-nøkkelen ser ut til å være ugyldig. Vennligst legg inn på nytt.");
                 localStorage.removeItem('openai_api_key'); // Clear bad key
                 setIsApiKeyModalOpen(true);
             } else {
-                alert(`Feil ved generering av lyd: ${error.message || 'Ukjent feil'}`);
+                alert(`Feil ved generering av lyd: ${message}`);
             }
         }
     };

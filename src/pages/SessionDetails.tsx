@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, Users, Plus, Trophy, ListOrdered } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -32,7 +32,7 @@ export default function SessionDetails() {
     const [selectedContributorId, setSelectedContributorId] = useState<string | null>(null);
     const [isReorderModalOpen, setIsReorderModalOpen] = useState(false);
 
-    const fetchSessionData = async () => {
+    const fetchSessionData = useCallback(async () => {
         if (!id) return;
         try {
             // Fetch session details
@@ -77,11 +77,13 @@ export default function SessionDetails() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [id, user]);
 
     useEffect(() => {
+        // State updates occur after the asynchronous request completes.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchSessionData();
-    }, [id]);
+    }, [fetchSessionData]);
 
     const handleRateClick = (beer: Beer) => {
         setSelectedBeer(beer);
@@ -304,7 +306,7 @@ export default function SessionDetails() {
                 onBeerAdded={fetchSessionData}
             />
 
-            {selectedBeer && (
+            {selectedBeer && isRateModalOpen && (
                 <RateBeerModal
                     isOpen={isRateModalOpen}
                     onClose={() => setIsRateModalOpen(false)}
@@ -327,14 +329,14 @@ export default function SessionDetails() {
                 variant="danger"
             />
 
-            <ReorderModal
+            {isReorderModalOpen && <ReorderModal
                 isOpen={isReorderModalOpen}
                 onClose={() => setIsReorderModalOpen(false)}
                 sessionId={session.id}
                 beers={beers}
                 isHost={isHost}
                 onReordered={fetchSessionData}
-            />
+            />}
         </div>
     );
 }

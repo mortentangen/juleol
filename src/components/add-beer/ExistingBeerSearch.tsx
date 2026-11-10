@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Search, Loader2, Beer as BeerIcon, Plus } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import type { Beer } from '../../types';
@@ -16,19 +16,7 @@ export default function ExistingBeerSearch({ sessionId, onBeerAdded }: ExistingB
     // Use an object to track loading state per beer to avoid UI flicker
     const [addingBeerId, setAddingBeerId] = useState<string | null>(null);
 
-    useEffect(() => {
-        fetchSessionBeerIds();
-    }, []);
-
-    // Debounce search
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            fetchExistingBeers();
-        }, 300);
-        return () => clearTimeout(timer);
-    }, [searchQuery]);
-
-    const fetchSessionBeerIds = async () => {
+    const fetchSessionBeerIds = useCallback(async () => {
         const { data } = await supabase
             .from('session_beers')
             .select('beer_id')
@@ -37,9 +25,9 @@ export default function ExistingBeerSearch({ sessionId, onBeerAdded }: ExistingB
         if (data) {
             setAddedBeerIds(new Set(data.map(item => item.beer_id)));
         }
-    }
+    }, [sessionId]);
 
-    const fetchExistingBeers = async () => {
+    const fetchExistingBeers = useCallback(async () => {
         setSearching(true);
         try {
             let query = supabase
@@ -56,11 +44,25 @@ export default function ExistingBeerSearch({ sessionId, onBeerAdded }: ExistingB
             if (error) throw error;
             setExistingBeers(data || []);
         } catch (error) {
-            // console.error('Error fetching beers:', error);
+            console.error('Error fetching beers:', error);
         } finally {
             setSearching(false);
         }
-    };
+    }, [searchQuery]);
+
+    useEffect(() => {
+        // State updates occur after the asynchronous request completes.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        fetchSessionBeerIds();
+    }, [fetchSessionBeerIds]);
+
+    // Debounce search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            fetchExistingBeers();
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [fetchExistingBeers]);
 
     const handleAddExistingBeer = async (beerId: string) => {
         if (addedBeerIds.has(beerId) || addingBeerId) return;

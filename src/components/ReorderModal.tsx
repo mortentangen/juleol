@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { X, GripVertical, User, Check } from 'lucide-react';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
 import { supabase } from '../lib/supabase';
@@ -23,10 +23,7 @@ interface GroupedBeers {
 export default function ReorderModal({ isOpen, onClose, sessionId, beers, isHost, onReordered }: ReorderModalProps) {
     const { user } = useAuth();
     const [loading, setLoading] = useState(false);
-    const [groups, setGroups] = useState<GroupedBeers[]>([]);
-
-    useEffect(() => {
-        if (!isOpen || !beers) return;
+    const [groups, setGroups] = useState<GroupedBeers[]>(() => {
 
         // Group beers by addedByUserId
         const groupedMap = new Map<string, GroupedBeers>();
@@ -42,9 +39,8 @@ export default function ReorderModal({ isOpen, onClose, sessionId, beers, isHost
         });
 
         // Convert Map to array
-        const groupedArray = Array.from(groupedMap.values());
-        setGroups(groupedArray);
-    }, [isOpen, beers]);
+        return Array.from(groupedMap.values());
+    });
 
     const handleReorderBeers = (userId: string, reorderedBeers: Beer[]) => {
         setGroups(prev => prev.map(group =>
