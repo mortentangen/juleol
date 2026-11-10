@@ -291,7 +291,6 @@ export default function Leaderboard() {
                                                 <div className="text-xl font-bold text-amber-500 leading-tight">
                                                     {score.avgScore.toFixed(1)}
                                                 </div>
-                                                <div className="text-xs text-slate-400 leading-tight">{score.ratingCount}v</div>
                                             </div>
                                         </div>
                                     </div>
