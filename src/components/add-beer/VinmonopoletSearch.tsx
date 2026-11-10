@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Loader2, Plus, Link as LinkIcon } from 'lucide-react';
-import { importFromVinmonopolet } from '../../lib/vinmonopolet';
+import { Loader2, Search } from 'lucide-react';
+import { getBeerDraft, searchBeers, type BeerSuggestion } from '../../lib/vinmonopolet';
 import type { BeerFormData } from '../AddBeerModal';
 
 interface VinmonopoletSearchProps {
@@ -8,81 +8,67 @@ interface VinmonopoletSearchProps {
 }
 
 export default function VinmonopoletSearch({ onBeerFound }: VinmonopoletSearchProps) {
-    const [importUrl, setImportUrl] = useState('');
-    const [importing, setImporting] = useState(false);
+    const [query, setQuery] = useState('');
+    const [url, setUrl] = useState('');
+    const [results, setResults] = useState<BeerSuggestion[] | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
-    const handleImportUrl = async () => {
-        if (!importUrl.trim()) return;
-
-        setImporting(true);
+    const search = async () => {
+        setLoading(true);
+        setError('');
+        setResults(null);
         try {
-            const beer = await importFromVinmonopolet(importUrl);
-            if (beer) {
-                onBeerFound({
-                    name: beer.name,
-                    brewery: beer.brewery,
-                    style: beer.style,
-                    abv: beer.abv?.toString() || '',
-                    description: beer.description || '',
-                    imageUrl: beer.imageUrl || ''
-                });
-                setImportUrl('');
-            } else {
-                alert('Kunne ikke importere øl fra URL. Vennligst sjekk URLen og prøv igjen.');
-            }
-        } catch (error) {
-            console.error('Import error:', error);
-            alert('Import feilet. Prøv igjen eller bruk manuell registrering.');
+            setResults(await searchBeers(query.trim()));
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Søket feilet. Du kan registrere ølet manuelt.');
         } finally {
-            setImporting(false);
+            setLoading(false);
         }
     };
 
+    const importBeer = async (kind: 'url' | 'code', value: string) => {
+        setLoading(true);
+        setError('');
+        try {
+            onBeerFound(await getBeerDraft(kind, value.trim()));
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Import feilet. Du kan registrere ølet manuelt.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const inputClass = 'min-w-0 flex-1 bg-slate-800/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder-slate-500';
+    const buttonClass = 'px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-lg font-medium disabled:opacity-50';
+
     return (
-        <div className="space-y-4">
-            <div className="text-center py-4">
-                <LinkIcon className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-white mb-2">Importer fra Vinmonopolet</h3>
-                <p className="text-slate-300 text-sm mb-4">Lim inn en Vinmonopolet produkt-URL for å fylle ut detaljer automatisk</p>
+        <div className="space-y-5">
+            <div>
+                <h3 className="text-lg font-medium text-white">Hent opplysninger fra Vinmonopolet</h3>
+                <p className="text-slate-300 text-sm mt-1">Søk etter øl eller lim inn en produktlenke. Du kan kontrollere og endre opplysningene før du lagrer.</p>
             </div>
-
-            <div className="flex gap-2">
-                <input
-                    type="url"
-                    value={importUrl}
-                    onChange={(e) => setImportUrl(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleImportUrl()}
-                    placeholder="https://www.vinmonopolet.no/.../p/12345678"
-                    className="flex-1 bg-slate-800/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder-slate-500"
-                />
-                <button
-                    onClick={handleImportUrl}
-                    disabled={importing || !importUrl.trim()}
-                    className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white rounded-lg font-medium shadow-lg shadow-amber-500/20 transition-all disabled:opacity-50 flex items-center"
-                >
-                    {importing ? (
-                        <>
-                            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                            Importerer...
-                        </>
-                    ) : (
-                        <>
-                            <Plus className="w-5 h-5 mr-2" />
-                            Importer
-                        </>
-                    )}
-                </button>
-            </div>
-
-            <div className="bg-slate-800/30 border border-white/10 rounded-lg p-4">
-                <h4 className="text-sm font-medium text-white mb-2">Hvordan bruke:</h4>
-                <ol className="text-sm text-slate-300 space-y-1 list-decimal list-inside">
-                    <li>Gå til <a href="https://www.vinmonopolet.no" target="_blank" rel="noopener noreferrer" className="text-amber-500 hover:text-amber-400">vinmonopolet.no</a></li>
-                    <li>Finn ølen du vil legge til</li>
-                    <li>Kopier URLen fra nettleseren</li>
-                    <li>Lim den inn over og trykk Importer</li>
-                </ol>
-            </div>
+            <form onSubmit={event => { event.preventDefault(); void search(); }} className="space-y-2">
+                <label htmlFor="vinmonopolet-query" className="block text-sm font-medium text-slate-300">Søk etter øl</label>
+                <div className="flex gap-2">
+                    <input id="vinmonopolet-query" value={query} onChange={event => setQuery(event.target.value)} maxLength={80} placeholder="For eksempel juleøl" className={inputClass} />
+                    <button type="submit" disabled={loading || query.trim().length < 2} className={buttonClass}><Search className="w-4 h-4 inline mr-1" />Søk</button>
+                </div>
+            </form>
+            {results && (results.length ? (
+                <ul aria-label="Øltreff" className="space-y-2">
+                    {results.map(result => <li key={result.code}><button type="button" disabled={loading} onClick={() => void importBeer('code', result.code)} className="w-full text-left rounded-lg bg-slate-800/50 px-4 py-2 text-white hover:bg-slate-700 disabled:opacity-50">{result.name}</button></li>)}
+                </ul>
+            ) : <p className="text-sm text-slate-300">Ingen øl funnet. Prøv et annet søk eller registrer ølet manuelt.</p>)}
+            <form onSubmit={event => { event.preventDefault(); void importBeer('url', url); }} className="space-y-2">
+                <label htmlFor="vinmonopolet-url" className="block text-sm font-medium text-slate-300">Produktlenke fra Vinmonopolet</label>
+                <div className="flex gap-2">
+                    <input id="vinmonopolet-url" type="url" value={url} onChange={event => setUrl(event.target.value)} placeholder="https://www.vinmonopolet.no/.../p/12345678" className={inputClass} />
+                    <button type="submit" disabled={loading || !url.trim()} className={buttonClass}>Hent</button>
+                </div>
+            </form>
+            {loading && <p role="status" className="text-sm text-slate-300"><Loader2 className="inline w-4 h-4 mr-2 animate-spin" />Henter fra Vinmonopolet …</p>}
+            {error && <p role="alert" className="text-sm text-red-300">{error}</p>}
         </div>
     );
 }

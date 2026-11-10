@@ -16,6 +16,131 @@ button {
     cursor: pointer;
 }
 
+.scoreboard-garland {
+    position: fixed;
+    inset: 0 0 auto;
+    height: var(--scoreboard-garland-height);
+    z-index: 10;
+    overflow: visible;
+    pointer-events: none;
+}
+
+:root {
+    --scoreboard-garland-height: 60px;
+}
+
+@media (min-width: 640px) {
+    :root {
+        --scoreboard-garland-height: 90px;
+    }
+}
+
+@media (min-width: 1024px) {
+    :root {
+        --scoreboard-garland-height: 150px;
+    }
+}
+
+.scoreboard-garland img {
+    display: block;
+    width: 100%;
+    height: auto;
+    mask-image: linear-gradient(to right, #000 0 19%, transparent 25% 75%, #000 81% 100%);
+}
+
+.scoreboard-header-inner {
+    padding-top: clamp(64px, 5.5vw, 66px);
+    padding-bottom: 7px;
+}
+
+.scoreboard-header {
+    background: transparent;
+}
+
+.scoreboard-header-row,
+.scoreboard-header-title,
+.scoreboard-header-controls {
+    display: flex;
+    align-items: center;
+}
+
+.scoreboard-header-row {
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.scoreboard-header-title {
+    min-width: 0;
+    gap: 12px;
+}
+
+.scoreboard-back-link {
+    margin-right: 12px;
+}
+
+.scoreboard-title-icon {
+    font-size: 32px;
+    line-height: 1;
+}
+
+.scoreboard-header-controls {
+    flex-shrink: 0;
+    gap: 10px;
+}
+
+.scoreboard-header-control {
+    min-height: 40px;
+    padding: 0 16px;
+    border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .08);
+    backdrop-filter: blur(12px);
+}
+
+.scoreboard-filter {
+    min-width: 132px;
+}
+
+@media (max-width: 639px) {
+    .scoreboard-header-inner {
+        padding-top: 66px;
+    }
+
+    .scoreboard-header-row {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .scoreboard-header-controls {
+        padding-left: 32px;
+    }
+
+    .scoreboard-header-control {
+        min-height: 36px;
+        padding: 0 12px;
+    }
+}
+
+.scoreboard-garland-light {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #fff0bf;
+    box-shadow: 0 0 7px 3px rgba(255, 188, 78, .5);
+    animation: garland-glow 5s ease-in-out infinite;
+}
+
+@keyframes garland-glow {
+    0%, 100% { opacity: .3; box-shadow: 0 0 4px 2px rgba(255, 188, 78, .25); }
+    50% { opacity: .8; box-shadow: 0 0 9px 4px rgba(255, 188, 78, .55); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .scoreboard-garland-light { animation: none; opacity: .6; }
+}
+
 body {
     @apply bg-slate-950 text-white min-h-screen overflow-x-hidden;
     background: radial-gradient(circle at top left, #1a2e1a, transparent 40%),

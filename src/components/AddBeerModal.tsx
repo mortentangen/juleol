@@ -37,6 +37,7 @@ export default function AddBeerModal({ isOpen, onClose, sessionId, onBeerAdded }
     const [activeTab, setActiveTab] = useState<'manual' | 'url' | 'existing'>('manual');
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState<BeerFormData>(INITIAL_FORM_DATA);
+    const [importNotice, setImportNotice] = useState('');
 
     const handleManualSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -66,7 +67,7 @@ export default function AddBeerModal({ isOpen, onClose, sessionId, onBeerAdded }
                         name: formData.name.trim(),
                         brewery: formData.brewery.trim(),
                         style: formData.style,
-                        abv: parseFloat(formData.abv),
+                        abv: formData.abv ? parseFloat(formData.abv) : null,
                         description: formData.description,
                         image_url: formData.imageUrl,
                     })
@@ -105,6 +106,7 @@ export default function AddBeerModal({ isOpen, onClose, sessionId, onBeerAdded }
             onBeerAdded?.();
             onClose();
             setFormData(INITIAL_FORM_DATA);
+            setImportNotice('');
         } catch (error) {
             console.error('Error adding beer:', error);
             alert('Kunne ikke legge til øl. Vennligst prøv igjen.');
@@ -165,19 +167,22 @@ export default function AddBeerModal({ isOpen, onClose, sessionId, onBeerAdded }
                                     : 'text-slate-400 hover:text-white hover:bg-white/5'
                                     }`}
                             >
-                                Importer URL
+                                Vinmonopolet
                             </button>
                         </div>
 
                         <div className="p-6 overflow-y-auto">
                             {activeTab === 'manual' ? (
-                                <ManualBeerForm
-                                    formData={formData}
-                                    onChange={setFormData}
-                                    onSubmit={handleManualSubmit}
-                                    loading={loading}
-                                    onCancel={onClose}
-                                />
+                                <>
+                                    {importNotice && <p role="status" className="mb-4 text-sm text-amber-300">{importNotice}</p>}
+                                    <ManualBeerForm
+                                        formData={formData}
+                                        onChange={setFormData}
+                                        onSubmit={handleManualSubmit}
+                                        loading={loading}
+                                        onCancel={onClose}
+                                    />
+                                </>
                             ) : activeTab === 'existing' ? (
                                 <ExistingBeerSearch
                                     sessionId={sessionId}
@@ -187,6 +192,14 @@ export default function AddBeerModal({ isOpen, onClose, sessionId, onBeerAdded }
                                 <VinmonopoletSearch
                                     onBeerFound={(beer) => {
                                         setFormData(beer);
+                                        const missing = [
+                                            !beer.brewery && 'bryggeri',
+                                            !beer.style && 'stil',
+                                            !beer.abv && 'alkoholprosent',
+                                            !beer.description && 'beskrivelse',
+                                            !beer.imageUrl && 'bilde',
+                                        ].filter(Boolean);
+                                        setImportNotice(missing.length ? `Mangler fra Vinmonopolet: ${missing.join(', ')}. Fyll inn det du ønsker.` : 'Opplysningene er hentet fra Vinmonopolet. Kontroller dem før du lagrer.');
                                         setActiveTab('manual');
                                     }}
                                 />

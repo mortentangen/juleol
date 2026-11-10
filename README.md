@@ -71,3 +71,13 @@ export default defineConfig([
   },
 ])
 ```
+
+## Vinmonopolet
+
+Under «Legg til øl» kan du søke i Vinmonopolets katalog eller lime inn en produktlenke. Opplysningene kan endres før lagring; manglende informasjon fylles inn manuelt. Oppslagene bruker nettstedets `vmpws/v3`-endepunkter via `/api/vinmonopolet` (en Vercel Function i produksjon og en Vite-middleware ved lokal utvikling). Disse endepunktene er ikke Vinmonopolets dokumenterte Open-API og kan endres. Produktbildet lagres som en lenke til Vinmonopolet, slik som øvrige bilde-URL-er i appen.
+
+Kjør katalogtestene med `npm test` (krever Node.js med innebygd TypeScript-støtte).
+
+## Lokal utvikling
+
+Start appen med `npm run dev`. I utviklingsmodus velger du én av fire testbrukere på innloggingssiden. Smakinger, øl og vurderinger lagres i nettleserens lokale lagring og deles mellom testbrukerne i samme nettleser. De sendes ikke til Supabase. Slett nettstedets lokale lagring for å nullstille testdataene. I produksjonsbygget brukes fortsatt Google-innlogging og Supabase.

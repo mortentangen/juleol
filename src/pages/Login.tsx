@@ -1,10 +1,18 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Beer } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { localUsers, signInLocal } from '../lib/localSupabase';
 
 export default function Login() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const navigate = useNavigate();
+
+    const handleLocalLogin = (userId: string) => {
+        signInLocal(userId);
+        navigate('/', { replace: true });
+    };
 
     const handleLogin = async () => {
         try {
@@ -33,7 +41,7 @@ export default function Login() {
                         <Beer className="w-8 h-8 text-amber-500" />
                     </div>
                     <h2 className="text-3xl font-bold text-white mb-2">Juleølsmaking</h2>
-                    <p className="text-gray-300">Logg inn for å rate øl</p>
+                    <p className="text-gray-300">{import.meta.env.DEV ? 'Velg en lokal testbruker' : 'Logg inn for å rate øl'}</p>
                 </div>
 
                 {error && (
@@ -43,7 +51,17 @@ export default function Login() {
                 )}
 
                 <div className="space-y-4">
-                    <button
+                    {import.meta.env.DEV ? (
+                        <>
+                            {localUsers.map(user => (
+                                <button key={user.id} onClick={() => handleLocalLogin(user.id)}
+                                    className="w-full px-4 py-3 rounded-lg text-left font-medium text-white bg-slate-700 hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors">
+                                    {user.user_metadata.full_name}
+                                </button>
+                            ))}
+                            <p className="text-sm text-gray-400">Testdata lagres lokalt i nettleseren.</p>
+                        </>
+                    ) : <button
                         onClick={handleLogin}
                         disabled={loading}
                         className="w-full flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-lg text-gray-900 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -67,7 +85,7 @@ export default function Login() {
                             />
                         </svg>
                         Logg inn med Google
-                    </button>
+                    </button>}
                 </div>
             </div>
         </div>

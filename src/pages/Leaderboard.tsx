@@ -183,43 +183,42 @@ export default function Leaderboard() {
 
     return (
         <div className="min-h-screen pb-8">
-            <header className="glass sticky top-0 z-40 border-b border-white/5">
-                <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2">
-                    <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-2 min-w-0">
+            <header className="scoreboard-header relative z-40">
+                <div className="scoreboard-header-inner max-w-[1100px] mx-auto px-3 sm:px-4">
+                    <div className="scoreboard-header-row">
+                        <div className="scoreboard-header-title">
                             <Link
                                 to={`/session/${id}`}
-                                className="text-slate-400 hover:text-white transition-colors flex-shrink-0"
+                                aria-label="Tilbake til smakingen"
+                                className="scoreboard-back-link text-slate-300 hover:text-white transition-colors flex-shrink-0"
                             >
-                                <ArrowLeft className="w-4 h-4" />
+                                <ArrowLeft className="w-5 h-5" />
                             </Link>
-                            <div className="p-1.5 bg-amber-500/20 rounded flex-shrink-0">
-                                <Trophy className="w-5 h-5 text-amber-500" />
-                            </div>
+                            <span className="scoreboard-title-icon flex-shrink-0" aria-hidden="true">🏆</span>
                             <div className="min-w-0">
-                                <h1 className="text-lg sm:text-xl font-bold text-white truncate">{sessionName}</h1>
+                                <h1 className="text-lg sm:text-2xl font-bold text-white leading-tight sm:truncate">{sessionName}</h1>
                                 <div className="flex items-center gap-1.5">
-                                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-                                    <span className="text-xs text-slate-400">Direkte</span>
+                                    <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                                    <span className="text-xs text-slate-200">Direkte</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="flex gap-2 items-center">
+                        <div className="scoreboard-header-controls">
                             {/* Hidden Audio Element */}
                             <audio ref={audioRef} className="hidden" />
 
                             {/* Live Mode Toggle */}
                             <button
                                 onClick={toggleLiveMode}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all ${liveMode
-                                    ? 'bg-red-500/20 border-red-500 text-red-500 animate-pulse'
-                                    : 'bg-slate-800 border-white/10 text-slate-400 hover:text-white'
+                                className={`scoreboard-header-control flex items-center gap-1.5 text-sm font-semibold transition-all ${liveMode
+                                    ? 'border-red-500/60 text-red-300 animate-pulse'
+                                    : 'text-slate-100 hover:bg-white/15'
                                     }`}
                                 title={liveMode ? "Live Kommentator PÅ" : "Skru på Live Kommentator"}
                             >
                                 {liveMode ? <Radio className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                                <span className="hidden sm:inline">{liveMode ? "LIVE" : "AI Lyd"}</span>
+                                <span>{liveMode ? "LIVE" : "AI Lyd"}</span>
                             </button>
 
 
@@ -227,7 +226,8 @@ export default function Leaderboard() {
                             <select
                                 value={filterCriteria}
                                 onChange={(e) => setFilterCriteria(e.target.value as FilterCriteria)}
-                                className="bg-slate-800 border border-white/20 rounded-lg px-3 py-1 text-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                                aria-label="Sorter resultatlisten etter"
+                                className="scoreboard-header-control scoreboard-filter text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                             >
                                 <option value="all">Alle</option>
                                 <option value="taste">Smak</option>
@@ -244,7 +244,7 @@ export default function Leaderboard() {
 
 
 
-            <div className="max-w-7xl mx-auto px-3 sm:px-4 mt-3">
+            <div className="max-w-[1100px] mx-auto px-3 sm:px-4 mt-3">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
                     <div className="lg:col-span-3 space-y-2">
                         {beerScores.length === 0 ? (
