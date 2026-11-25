@@ -78,6 +78,12 @@ Under «Legg til øl» kan du søke i Vinmonopolets katalog eller lime inn en pr
 
 Kjør katalogtestene med `npm test` (krever Node.js med innebygd TypeScript-støtte).
 
+## Deltakerprofil
+
+I en smaking ligger «Min deltakerprofil» over øllista. Lokal utvikling bruker to forhåndsskrevne oppfølgingsspørsmål og lagrer testprofiler i nettleseren.
+
+For en publisert app, kjør `migration_participant_profiles.sql` i Supabase etter `migration_session_participants.sql`. Behold `juleol_private` utenfor eksponerte skjemaer i Supabase Data API. Sett `OPENAI_API_KEY` i servermiljøet i Vercel for å aktivere AI-oppfølginger. Funksjonen bruker også de eksisterende `VITE_SUPABASE_URL` og `VITE_SUPABASE_PUBLISHABLE_KEY`-variablene. Deltakere kan fylle ut og lagre profilen selv om AI-tjenesten ikke er konfigurert.
+
 ## Lokal utvikling
 
 Start appen med `npm run dev`. I utviklingsmodus velger du én av fire testbrukere på innloggingssiden. Smakinger, øl og vurderinger lagres i nettleserens lokale lagring og deles mellom testbrukerne i samme nettleser. De sendes ikke til Supabase. Slett nettstedets lokale lagring for å nullstille testdataene. I produksjonsbygget brukes fortsatt Google-innlogging og Supabase.

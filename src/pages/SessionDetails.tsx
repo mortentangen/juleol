@@ -9,6 +9,7 @@ import AddBeerModal from '../components/AddBeerModal';
 import RateBeerModal from '../components/RateBeerModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import ReorderModal from '../components/ReorderModal';
+import ParticipantProfilePanel from '../components/ParticipantProfilePanel';
 import { motion } from 'framer-motion';
 
 export default function SessionDetails() {
@@ -243,6 +244,10 @@ export default function SessionDetails() {
             </header>
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {user && (
+                    <ParticipantProfilePanel key={`${session.id}:${user.id}`}
+                        sessionId={session.id} userId={user.id} sessionCreatedAt={session.created_at} />
+                )}
                 {(() => {
                     const filteredBeers = beers.filter(beer => {
                         if (selectedContributorId) {
