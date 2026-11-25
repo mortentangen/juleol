@@ -82,25 +82,25 @@ export default function Dashboard() {
 
             {/* Main Content */}
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="flex justify-between items-center mb-8">
-                    <h2 className="text-3xl font-bold text-white tracking-tight">Dine ølsmakinger</h2>
-                    <div className="flex gap-3">
+                <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <h2 className="text-2xl font-bold text-white tracking-tight sm:text-3xl">Dine ølsmakinger</h2>
+                    <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-3">
                         <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => setIsJoinModalOpen(true)}
-                            className="flex items-center px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-medium border border-white/10 transition-all"
+                            className="flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-slate-800 px-2 py-2 text-center text-sm font-medium text-white transition-all hover:bg-slate-700 sm:px-4 sm:text-base"
                         >
-                            <Users className="w-5 h-5 mr-2" />
+                            <Users className="h-5 w-5 shrink-0" />
                             Finn ølsmaking
                         </motion.button>
                         <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => setIsCreateModalOpen(true)}
-                            className="flex items-center px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white rounded-lg font-medium shadow-lg shadow-amber-500/20 transition-all"
+                            className="flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 px-2 py-2 text-center text-sm font-medium text-white shadow-lg shadow-amber-500/20 transition-all hover:from-amber-400 hover:to-orange-500 sm:px-4 sm:text-base"
                         >
-                            <Plus className="w-5 h-5 mr-2" />
+                            <Plus className="h-5 w-5 shrink-0" />
                             Ny ølsmaking
                         </motion.button>
                     </div>
